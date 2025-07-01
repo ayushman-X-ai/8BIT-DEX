@@ -11,16 +11,24 @@ import { PokemonFilter } from '@/components/pokemon-filter';
 
 const LogoIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="none" {...props}>
-        {/* Main background block */}
-        <path fill="hsl(var(--primary))" d="M4 4h16v16H4z"/>
+        {/* Lens Frame */}
+        <path fill="hsl(var(--primary))" d="M8 4h8v2H8z" />
+        <path fill="hsl(var(--primary))" d="M5 6h3v2H5z" />
+        <path fill="hsl(var(--primary))" d="M16 6h3v2h-3z" />
+        <path fill="hsl(var(--primary))" d="M4 8h2v8H4z" />
+        <path fill="hsl(var(--primary))" d="M18 8h2v8h-2z" />
+        <path fill="hsl(var(--primary))" d="M5 16h3v2H5z" />
+        <path fill="hsl(var(--primary))" d="M16 16h3v2h-3z" />
+        <path fill="hsl(var(--primary))" d="M8 18h8v2H8z" />
 
-        {/* Left side - D-pad */}
-        <path fill="hsl(var(--foreground))" d="M8 11h3v2H8z"/>
-        <path fill="hsl(var(--foreground))" d="M9 10h1v4H9z"/>
-
-        {/* Right side - Screen-like element */}
-        <path fill="hsl(var(--background))" d="M13 8h6v8h-6z"/>
-        <path fill="hsl(var(--accent))" d="M14 9h4v6h-4z"/>
+        {/* Lens Glass */}
+        <path fill="hsl(var(--accent))" d="M6 8h12v8H6z" />
+        
+        {/* Handle */}
+        <path fill="hsl(var(--primary))" d="M14 18l2-2 4 4-2 2z" />
+        
+        {/* Lens Glare */}
+        <path fill="hsl(var(--background))" d="M8 10h3v2H8z" />
     </svg>
 );
 
