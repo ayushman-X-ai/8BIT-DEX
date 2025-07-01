@@ -239,6 +239,9 @@ export default function SnapPage() {
                     </div>
                 </div>
             </main>
+            <footer className="text-center py-4 text-xs text-background/50 font-code bg-black">
+                Made By Ayushman
+            </footer>
         </div>
     );
 }

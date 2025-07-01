@@ -191,12 +191,15 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
                             {activeTab === 'stats' && (
                                 <div className="space-y-4">
                                     {pokemon.stats.map(stat => (
-                                      <div key={stat.stat.name} className="flex flex-col gap-1.5">
-                                        <div className="flex justify-between items-baseline">
+                                      <div key={stat.stat.name} className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-4">
+                                        <div className="flex justify-between items-baseline sm:w-1/3">
                                           <p className="font-medium text-muted-foreground uppercase text-xs truncate">{stat.stat.name.replace('-', ' ')}</p>
-                                          <p className="font-bold text-lg">{stat.base_stat}</p>
+                                          <p className="font-bold text-lg sm:hidden">{stat.base_stat}</p>
                                         </div>
-                                        <StatBar value={stat.base_stat} max={255} />
+                                        <div className="w-full sm:w-2/3 flex items-center gap-4">
+                                            <StatBar value={stat.base_stat} max={255} />
+                                            <p className="font-bold text-lg hidden sm:block w-12 text-right">{stat.base_stat}</p>
+                                        </div>
                                       </div>
                                     ))}
                                 </div>
@@ -238,6 +241,9 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
                     </div>
                 </div>
             </main>
+            <footer className="text-center py-4 text-xs text-muted-foreground font-code">
+                Made By Ayushman
+            </footer>
         </div>
     )
 }

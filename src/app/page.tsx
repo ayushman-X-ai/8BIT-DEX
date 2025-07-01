@@ -82,6 +82,9 @@ export default function Home() {
         </div>
         <PokemonGrid searchQuery={searchQuery} selectedTypes={selectedTypes} />
       </main>
+      <footer className="text-center py-4 text-xs text-muted-foreground font-code">
+        Made By Ayushman
+      </footer>
     </div>
   );
 }
