@@ -155,7 +155,7 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
                         <div className="flex border-b-2 border-foreground mb-4 overflow-x-auto">
                             {['About', 'Stats', 'Stages', 'Profile', 'Moves'].map(tab => (
                                 <button key={tab} onClick={() => setActiveTab(tab.toLowerCase())} className={cn(
-                                    "px-4 py-2 font-bold text-sm uppercase -mb-[2px] text-muted-foreground border-2 border-transparent flex-shrink-0",
+                                    "px-4 py-2 font-bold text-xs uppercase -mb-[2px] text-muted-foreground border-2 border-transparent flex-shrink-0",
                                     activeTab === tab.toLowerCase() && "bg-card border-foreground border-b-card text-accent"
                                 )}>
                                     {tab}
