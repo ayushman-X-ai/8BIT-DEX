@@ -5,6 +5,7 @@ import { Search } from 'lucide-react';
 import { PokemonGrid } from '@/components/pokemon-grid';
 import { Input } from '@/components/ui/input';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { PokemonFilter } from '@/components/pokemon-filter';
 
 const PokeballIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
@@ -30,6 +31,7 @@ const PokeballIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [selectedTypes, setSelectedTypes] = React.useState<string[]>([]);
 
   return (
     <div className="bg-background min-h-screen">
@@ -45,8 +47,8 @@ export default function Home() {
         </div>
       </header>
       <main className="container mx-auto py-8 px-4 md:px-8">
-        <div className="mb-8 max-w-md mx-auto">
-          <div className="relative">
+        <div className="mb-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <div className="relative w-full max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
               type="search"
@@ -56,8 +58,12 @@ export default function Home() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+          <PokemonFilter
+            selectedTypes={selectedTypes}
+            onSelectedTypesChange={setSelectedTypes}
+          />
         </div>
-        <PokemonGrid searchQuery={searchQuery} />
+        <PokemonGrid searchQuery={searchQuery} selectedTypes={selectedTypes} />
       </main>
     </div>
   );
