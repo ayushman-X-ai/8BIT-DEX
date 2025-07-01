@@ -187,7 +187,7 @@ export default function SnapPage() {
             <main className="flex-grow flex flex-col items-center justify-center p-4 bg-black">
                 <div className="w-full max-w-md space-y-2 text-center mb-4">
                     <p className="font-code text-xs text-green-400 uppercase">SYSTEM STATUS: <span className="text-white">ONLINE</span></p>
-                    <p className="font-code text-xs text-green-400 uppercase">TARGETING: <span className="text-white">POKÉMON</span></p>
+                    <p className="font-code text-xs text-green-400 uppercase">TARGETING: <span className="text-white">POKEMON</span></p>
                 </div>
 
                 <div className="relative w-full max-w-md aspect-[4/3] bg-black border-4 border-foreground overflow-hidden shadow-[inset_0_0_10px_black,0_0_10px_hsl(var(--primary)/0.5)]">
