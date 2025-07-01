@@ -11,31 +11,25 @@ import { PokemonFilter } from '@/components/pokemon-filter';
 
 const LogoIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="none" {...props}>
-        {/* Lens Frame */}
-        <path fill="hsl(var(--primary))" d="M8 4h8v2H8z" />
-        <path fill="hsl(var(--primary))" d="M5 6h3v2H5z" />
-        <path fill="hsl(var(--primary))" d="M16 6h3v2h-3z" />
-        <path fill="hsl(var(--primary))" d="M4 8h2v8H4z" />
-        <path fill="hsl(var(--primary))" d="M18 8h2v8h-2z" />
-        <path fill="hsl(var(--primary))" d="M5 16h3v2H5z" />
-        <path fill="hsl(var(--primary))" d="M16 16h3v2h-3z" />
-        <path fill="hsl(var(--primary))" d="M8 18h8v2H8z" />
+        {/* Motion lines */}
+        <path fill="hsl(var(--accent))" d="M2 8h4v2H2z M3 11h4v2H3z" />
 
-        {/* Lens Glass */}
-        <path fill="hsl(var(--accent))" d="M6 8h12v8H6z" />
+        {/* Main Pokeball Body */}
+        {/* Outline */}
+        <path fill="hsl(var(--foreground))" d="M12 6h8v1h-8z M10 7h2v1h-2z M20 7h1v1h-1z M9 8h1v1H9z M21 8h1v6h-1z M9 15h1v1H9z M20 15h1v1h-1z M10 16h2v1h-2z M12 17h8v1h-8z" />
+
+        {/* Red Part */}
+        <path fill="hsl(var(--primary))" d="M12 7h8v1h-8z M10 8h11v1H10z M10 9h11v2H10z" />
         
-        {/* Handle */}
-        <path fill="hsl(var(--primary))" d="M14 18l2-2 4 4-2 2z" />
+        {/* White Part */}
+        <path fill="hsl(var(--card))" d="M10 13h11v2H10z M10 15h10v1H10z M12 16h8v1h-8z" />
         
-        {/* Mini Pokeball inside lens */}
-        {/* Top half (red) */}
-        <path fill="hsl(var(--primary))" d="M9 10h6v2H9z" />
-        {/* Bottom half (background color) */}
-        <path fill="hsl(var(--background))" d="M9 13h6v2H9z" />
-        {/* Center line (foreground color) */}
-        <path fill="hsl(var(--foreground))" d="M9 12h6v1H9z" />
-        {/* Center button (background color) */}
-        <path fill="hsl(var(--background))" d="M11 12h2v1h-2z" />
+        {/* Center Band */}
+        <path fill="hsl(var(--foreground))" d="M9 11h13v2H9z" />
+        
+        {/* Center Button */}
+        <path fill="hsl(var(--card))" d="M14 11h3v2h-3z" />
+        <path fill="hsl(var(--foreground))" d="M15 11.5h1v1h-1z" />
     </svg>
 );
 
