@@ -7,27 +7,20 @@ import { Input } from '@/components/ui/input';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { PokemonFilter } from '@/components/pokemon-filter';
 
-const PokeballIcon = (props: React.SVGProps<SVGSVGElement>) => (
+const PixelPokeballIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    stroke="none"
     {...props}
   >
-    <line x1="3" y1="12" x2="21" y2="12" />
-    <path d="M12 21a9 9 0 0 0 9-9" />
-    <path d="M12 3a9 9 0 0 0-9 9" />
-    <path d="M12 21a2.5 2.5 0 0 0 0-5" />
-    <path d="M12 3a2.5 2.5 0 0 1 0 5" />
-    <circle cx="12" cy="12" r="2.5" />
+    <path d="M10 3h4v1h1v1h1v2h1v2h-1v2h-1v1h-1v1h-4v-1H9v-1H8v-2H7v-2h1V5h1V4h1V3z" />
+    <path fill="hsl(var(--primary))" d="M4 10h1v1h1v1h2v1h1v1h2v-1h1v-1h2v-1h1v-1h1v4h-1v1h-1v1h-2v1h-1v1h-2v-1H9v-1H7v-1H6v-1H5v-1H4v-4z" />
+    <path fill="white" d="M10 11h4v2h-4z" />
   </svg>
 );
+
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -35,12 +28,12 @@ export default function Home() {
 
   return (
     <div className="bg-background min-h-screen">
-      <header className="py-6 px-4 md:px-8 border-b sticky top-0 z-10 bg-background/80 backdrop-blur-sm">
+      <header className="py-4 px-4 md:px-8 border-b-4 border-foreground sticky top-0 z-10 bg-background">
         <div className="container mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <PokeballIcon className="text-accent h-8 w-8" />
-            <h1 className="text-3xl font-bold font-headline text-foreground">
-              Kanto Dex
+          <div className="flex items-center gap-2 sm:gap-4">
+            <PixelPokeballIcon className="text-primary h-8 w-8" />
+            <h1 className="text-xl sm:text-2xl font-bold font-headline text-foreground uppercase tracking-wider">
+              PokéDex
             </h1>
           </div>
           <ThemeToggle />
@@ -49,11 +42,11 @@ export default function Home() {
       <main className="container mx-auto py-8 px-4 md:px-8">
         <div className="mb-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
           <div className="relative w-full max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search Pokémon by name or ID..."
-              className="w-full pl-10"
+              placeholder="Search by name or ID..."
+              className="w-full pl-9 border-2 border-foreground bg-input text-xs sm:text-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />

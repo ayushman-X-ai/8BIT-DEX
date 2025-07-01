@@ -11,13 +11,13 @@ export default {
   theme: {
     extend: {
       boxShadow: {
-        'neo': '4px 4px 0 hsl(var(--foreground))',
-        'neo-sm': '2px 2px 0 hsl(var(--foreground))',
+        'pixel': '4px 4px 0 hsl(var(--foreground))',
+        'pixel-sm': '2px 2px 0 hsl(var(--foreground))',
       },
       fontFamily: {
-        body: ['Inter', 'sans-serif'],
-        headline: ['Inter', 'sans-serif'],
-        code: ['monospace'],
+        body: ['"Press Start 2P"', 'system-ui', 'sans-serif'],
+        headline: ['"Press Start 2P"', 'system-ui', 'sans-serif'],
+        code: ['"Press Start 2P"', 'monospace'],
       },
       colors: {
         background: 'hsl(var(--background))',
@@ -72,9 +72,9 @@ export default {
         },
       },
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        lg: '0',
+        md: '0',
+        sm: '0',
       },
       keyframes: {
         'accordion-down': {

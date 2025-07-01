@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatPokemonId, getPokemonTypeClasses, capitalize } from '@/lib/pokemon-utils';
+import { cn } from '@/lib/utils';
 
 interface PokemonCardProps {
   pokemon: Pokemon;
@@ -18,9 +19,9 @@ export function PokemonCard({ pokemon }: PokemonCardProps) {
 
   return (
     <Link href={`/pokemon/${pokemon.id}`} className="outline-none group" aria-label={`View details for ${capitalize(pokemon.name)}`}>
-      <Card className="relative overflow-hidden rounded-lg shadow-lg transition-all duration-300 group-hover:shadow-2xl group-hover:-translate-y-1 group-focus-visible:ring-2 group-focus-visible:ring-ring group-focus-visible:ring-offset-2">
+      <Card className="relative overflow-hidden rounded-none border-2 border-foreground transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-[4px_4px_0_hsl(var(--foreground))] group-focus-visible:ring-2 group-focus-visible:ring-ring group-focus-visible:ring-offset-2 bg-card">
         <CardContent className="p-0 text-center">
-          <div className={`p-4 ${typeClasses} transition-colors`}>
+          <div className={cn("p-4 transition-colors border-b-2 border-foreground", typeClasses)}>
             <div className="relative aspect-square w-full">
               <Image
                 src={pokemon.sprites.other['official-artwork'].front_default || `https://placehold.co/256x256.png`}
@@ -32,12 +33,12 @@ export function PokemonCard({ pokemon }: PokemonCardProps) {
               />
             </div>
           </div>
-          <div className="p-4 bg-card">
-            <p className="text-sm font-semibold text-muted-foreground">{formatPokemonId(pokemon.id)}</p>
-            <h3 className="text-xl font-bold font-headline capitalize">{capitalize(pokemon.name)}</h3>
-            <div className="flex justify-center gap-2 mt-2">
+          <div className="p-2 sm:p-4 bg-card text-center">
+            <p className="text-xs font-semibold text-muted-foreground">{formatPokemonId(pokemon.id)}</p>
+            <h3 className="text-sm sm:text-base font-bold font-headline capitalize truncate">{capitalize(pokemon.name)}</h3>
+            <div className="flex justify-center gap-1 sm:gap-2 mt-2">
               {pokemon.types.map(({ type }) => (
-                <Badge key={type.name} variant="outline" className="capitalize">
+                <Badge key={type.name} variant="outline" className="capitalize text-xs px-2 py-0.5 border-2 border-foreground">
                   {type.name}
                 </Badge>
               ))}
@@ -51,17 +52,17 @@ export function PokemonCard({ pokemon }: PokemonCardProps) {
 
 export function PokemonCardSkeleton() {
   return (
-    <Card className="overflow-hidden rounded-lg shadow-lg">
+    <Card className="rounded-none border-2 border-foreground">
       <CardContent className="p-0">
-        <div className="bg-gray-200 dark:bg-gray-700 p-4">
-          <Skeleton className="aspect-square w-full rounded-md" />
+        <div className="bg-muted p-4 border-b-2 border-foreground">
+          <Skeleton className="aspect-square w-full rounded-none" />
         </div>
         <div className="p-4 bg-card">
-          <Skeleton className="h-4 w-1/4 mx-auto" />
-          <Skeleton className="h-6 w-3/4 mx-auto mt-2" />
+          <Skeleton className="h-4 w-1/4 mx-auto rounded-none" />
+          <Skeleton className="h-6 w-3/4 mx-auto mt-2 rounded-none" />
           <div className="flex justify-center gap-2 mt-2">
-            <Skeleton className="h-6 w-16 rounded-full" />
-            <Skeleton className="h-6 w-16 rounded-full" />
+            <Skeleton className="h-6 w-16 rounded-none" />
+            <Skeleton className="h-6 w-16 rounded-none" />
           </div>
         </div>
       </CardContent>

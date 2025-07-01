@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, ReactElement } from "react";
@@ -15,22 +14,9 @@ import {
   getPokemonTypeClasses,
 } from "@/lib/pokemon-utils";
 import { cn } from "@/lib/utils";
-import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
-
-// --- START: ICONS ---
-const GenderIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <circle cx="9" cy="15" r="3" />
-      <path d="M9 12v-2" />
-      <path d="m11 10-2-2-2 2" />
-      <path d="m15 15 3-3" />
-      <path d="M18 9v6h-6" />
-  </svg>
-);
-// --- END: ICONS ---
 
 interface Evolution {
   id: number;
@@ -76,6 +62,23 @@ const parseEvolutionChain = (chainNode: EvolutionChain | undefined): Evolution[]
 };
 
 
+const StatBar = ({ value, max }: { value: number; max: number }) => {
+    const percentage = (value / max) * 100;
+    const blockCount = 20;
+    const filledBlocks = Math.round((percentage / 100) * blockCount);
+  
+    return (
+      <div className="w-full flex gap-0.5 h-4 border-2 border-foreground bg-muted p-0.5">
+        {Array.from({ length: blockCount }).map((_, i) => (
+          <div
+            key={i}
+            className={`w-full h-full ${i < filledBlocks ? 'bg-accent' : 'bg-transparent'}`}
+          />
+        ))}
+      </div>
+    );
+};
+
 function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }) {
     const [activeTab, setActiveTab] = useState('about');
     const [isFavorite, setIsFavorite] = useState(false);
@@ -84,107 +87,100 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
     const gender = getGenderRatio(pokemon.gender_rate);
 
     const allEvolutions = parseEvolutionChain(pokemon.evolutionChain?.chain);
+    const primaryType = pokemon.types[0].type.name;
+    const typeClasses = getPokemonTypeClasses(primaryType);
+
+
+    const StatPill = ({ icon, label, value, unit }: {icon: ReactElement, label: string, value: string | number, unit?: string}) => (
+        <div className="flex-1 p-2 border-2 border-foreground bg-card flex flex-col items-center justify-center gap-1 text-center min-w-[100px]">
+            <div className="flex items-center gap-2">
+                {icon}
+                <span className="font-bold text-xs uppercase">{label}</span>
+            </div>
+            <p className="text-lg font-headline text-accent">
+                {value}
+                {unit && <span className="text-xs ml-1 text-muted-foreground">{unit}</span>}
+            </p>
+        </div>
+    );
 
     return (
-        <div className="bg-background bg-[radial-gradient(hsl(var(--border))_1px,transparent_1px)] bg-[size:16px_16px] min-h-screen font-body">
-            <header className="py-4 px-4 md:px-8 border-b sticky top-0 z-10 bg-background/80 backdrop-blur-sm">
-                <div className="container mx-auto grid grid-cols-3 items-center">
-                    <div className="justify-self-start">
-                        <Link href="/" aria-label="Back to Pokédex">
-                            <Button variant="ghost" size="icon">
-                                <ArrowLeft className="h-6 w-6" />
-                            </Button>
-                        </Link>
-                    </div>
-                    <div className="flex flex-col items-center justify-self-center">
-                        <h1 className="text-3xl font-bold font-headline">{capitalize(pokemon.name)}</h1>
-                        <p className="text-muted-foreground font-mono">{formatPokemonId(pokemon.id)}</p>
-                    </div>
-                    <div className="flex items-center gap-2 justify-self-end">
-                        <Button variant="ghost" size="icon" onClick={() => setIsFavorite(p => !p)} aria-label="Toggle Favorite">
-                            <Heart className={cn("h-6 w-6", isFavorite ? "text-red-500 fill-current" : "text-foreground/50")} />
+        <div className="bg-background min-h-screen font-body text-xs sm:text-sm">
+            <header className="py-4 px-4 md:px-8 border-b-4 border-foreground sticky top-0 z-10 bg-background">
+                <div className="container mx-auto flex items-center justify-between">
+                    <Link href="/" aria-label="Back to Pokédex">
+                        <Button variant="outline" size="sm" className="border-2 border-foreground">
+                            <ArrowLeft className="h-4 w-4 mr-2" />
+                            Back
                         </Button>
-                        <ThemeToggle />
+                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="icon" onClick={() => setIsFavorite(p => !p)} aria-label="Toggle Favorite" className="border-2 border-transparent hover:border-foreground">
+                          <Heart className={cn("h-5 w-5", isFavorite ? "text-primary fill-current" : "text-foreground/50")} />
+                      </Button>
+                      <ThemeToggle />
                     </div>
                 </div>
             </header>
 
             <main className="container mx-auto py-8 px-4 md:px-8">
-                <div className="max-w-2xl mx-auto">
-                    <div className="rounded-xl border-2 border-foreground shadow-neo p-2 bg-card">
-                        <div className="relative aspect-square rounded-lg overflow-hidden">
-                            <div className="absolute inset-0 bg-red-400 top-0 h-1/2"></div>
-                            <div className="absolute inset-0 bg-card bottom-0 h-1/2 top-1/2"></div>
-                            <div className="absolute top-1/2 left-0 right-0 h-2 -translate-y-1/2 bg-foreground z-10"></div>
-                            <div className="absolute top-1/2 left-1/2 w-16 h-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-card border-4 border-foreground z-20"></div>
-                            <div className="absolute top-1/2 left-1/2 w-8 h-8 -translate-x-1/2 -translate-y-1/2 rounded-full bg-muted border-2 border-foreground z-30"></div>
-
-                            <div className="relative w-full h-full p-4 z-40">
-                                <Image
-                                    src={pokemon.sprites.other['official-artwork'].front_default || `https://placehold.co/256x256.png`}
-                                    alt={pokemon.name}
-                                    fill
-                                    priority
-                                    className="object-contain drop-shadow-lg"
-                                    sizes="90vw, (min-width: 768px) 40vw"
-                                    data-ai-hint="pokemon character"
-                                />
+                <div className="max-w-4xl mx-auto">
+                    <div className="flex flex-col md:flex-row gap-8 items-center mb-8">
+                        <div className={cn("relative flex-shrink-0 w-full max-w-[280px] aspect-square p-4 border-4 border-foreground bg-card", typeClasses)}>
+                            <Image
+                                src={pokemon.sprites.other['official-artwork'].front_default || `https://placehold.co/256x256.png`}
+                                alt={pokemon.name}
+                                fill
+                                priority
+                                className="object-contain drop-shadow-lg"
+                                sizes="(max-width: 768px) 90vw, 280px"
+                                data-ai-hint="pokemon character"
+                            />
+                            <span className="absolute bottom-1 right-2 text-lg font-bold text-black/50">{formatPokemonId(pokemon.id)}</span>
+                        </div>
+                        <div className="flex-grow text-center md:text-left">
+                            <h1 className="text-4xl md:text-5xl font-bold font-headline uppercase tracking-wide text-foreground">{capitalize(pokemon.name)}</h1>
+                            <p className="mt-2 text-muted-foreground leading-relaxed max-w-prose mx-auto md:mx-0 text-xs">{flavorText}</p>
+                            <div className="flex justify-center md:justify-start gap-2 mt-4">
+                                {pokemon.types.map(({ type }) => (
+                                    <div key={type.name} className={cn("px-3 py-1 border-2 border-foreground font-bold text-xs uppercase", getPokemonTypeClasses(type.name))}>
+                                        {type.name}
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
-
-                    <div className="flex justify-center my-4">
-                        <div className={cn(
-                          "inline-flex items-center justify-center px-4 py-2 rounded-full border-2 border-foreground shadow-neo-sm font-semibold",
-                          getPokemonTypeClasses(pokemon.types[0].type.name)
-                        )}>
-                           <span>{capitalize(pokemon.types[0].type.name)}</span>
-                        </div>
-                    </div>
                     
-                    {/* Tabs */}
                     <div className="w-full">
                         <div className="flex border-b-2 border-foreground mb-4">
-                            {['about', 'stats', 'moves', 'evolutions'].map(tab => (
-                                <button key={tab} onClick={() => setActiveTab(tab)} className={cn(
-                                    "px-4 py-2 font-bold -mb-[2px] text-muted-foreground",
-                                    activeTab === tab && "bg-lime-300 border-2 border-foreground rounded-t-lg text-black border-b-card"
+                            {['About', 'Stats', 'Evolutions'].map(tab => (
+                                <button key={tab} onClick={() => setActiveTab(tab.toLowerCase())} className={cn(
+                                    "px-4 py-2 font-bold text-sm uppercase -mb-[2px] text-muted-foreground border-2 border-transparent",
+                                    activeTab === tab.toLowerCase() && "bg-card border-foreground border-b-card text-accent"
                                 )}>
-                                    {capitalize(tab)}
+                                    {tab}
                                 </button>
                             ))}
                         </div>
 
-                        <div className="bg-card rounded-xl border-2 border-foreground shadow-neo p-4 min-h-[200px]">
+                        <div className="bg-card border-2 border-foreground p-4 sm:p-6 min-h-[250px]">
                             {activeTab === 'about' && (
-                                <div className="space-y-4">
-                                    <p className="text-card-foreground/80 leading-relaxed">{flavorText}</p>
-                                    
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="bg-lime-300 p-3 rounded-full border-2 border-foreground shadow-neo-sm flex items-center justify-center gap-2 text-black">
-                                            <Weight className="w-5 h-5"/>
-                                            <span className="font-bold">{(pokemon.weight / 10).toFixed(1)}</span>
-                                            <span className="text-sm">kg</span>
-                                        </div>
-                                        <div className="bg-lime-300 p-3 rounded-full border-2 border-foreground shadow-neo-sm flex items-center justify-center gap-2 text-black">
-                                            <Ruler className="w-5 h-5"/>
-                                            <span className="font-bold">{(pokemon.height / 10).toFixed(1)}</span>
-                                            <span className="text-sm">m</span>
-                                        </div>
+                                <div className="space-y-6">
+                                    <div className="flex flex-wrap gap-4">
+                                        <StatPill icon={<Weight className="w-5 h-5"/>} label="Weight" value={(pokemon.weight / 10).toFixed(1)} unit="kg" />
+                                        <StatPill icon={<Ruler className="w-5 h-5"/>} label="Height" value={(pokemon.height / 10).toFixed(1)} unit="m" />
                                     </div>
-                                    
-                                    <div className="space-y-2">
-                                        <div className="flex items-center gap-2 font-bold">
-                                            <GenderIcon className="w-5 h-5" />
-                                            <span>Gender Ratio</span>
-                                        </div>
+                                    <div>
+                                        <h4 className="font-bold uppercase text-muted-foreground mb-2">Gender</h4>
                                         {gender ? (
-                                            <div className="relative w-full h-8 rounded-full border-2 border-foreground shadow-neo-sm overflow-hidden flex">
-                                                <div className="absolute inset-0 flex items-center px-4 z-10">
-                                                    <span className="font-bold text-white text-shadow">{gender.male}% Male</span>
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-full border-2 border-foreground flex h-6 p-0.5 bg-muted">
+                                                    <div style={{width: `${gender.male}%`}} className="h-full bg-blue-500"></div>
+                                                    <div style={{width: `${gender.female}%`}} className="h-full bg-pink-500"></div>
                                                 </div>
-                                                <div style={{width: `${gender.male}%`}} className="h-full bg-blue-400"></div>
-                                                <div style={{width: `${gender.female}%`}} className="h-full bg-pink-400"></div>
+                                                <div className="flex-shrink-0">
+                                                    <span className="text-blue-400 font-bold">{gender.male}% M</span> / <span className="text-pink-400 font-bold">{gender.female}% F</span>
+                                                </div>
                                             </div>
                                         ) : (
                                             <p className="text-muted-foreground">Genderless</p>
@@ -195,44 +191,27 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
                             {activeTab === 'stats' && (
                                 <div className="space-y-3">
                                     {pokemon.stats.map(stat => (
-                                      <div key={stat.stat.name} className="grid grid-cols-3 items-center gap-2">
-                                        <p className="font-medium text-muted-foreground capitalize col-span-1">{stat.stat.name.replace('-', ' ')}</p>
-                                        <div className="col-span-2">
-                                            <div className="relative h-6 w-full bg-muted rounded-full border-2 border-foreground">
-                                                <div className="absolute h-full bg-yellow-400 rounded-full" style={{width: `${(stat.base_stat/255)*100}%`}}></div>
-                                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-black">{stat.base_stat}</span>
-                                            </div>
+                                      <div key={stat.stat.name} className="grid grid-cols-4 items-center gap-2 sm:gap-4">
+                                        <p className="font-medium text-muted-foreground uppercase text-xs col-span-1 truncate">{stat.stat.name.replace('-', ' ')}</p>
+                                        <div className="col-span-3 flex items-center gap-4">
+                                            <StatBar value={stat.base_stat} max={255} />
+                                            <p className="font-bold text-lg w-12 text-right">{stat.base_stat}</p>
                                         </div>
                                       </div>
                                     ))}
                                 </div>
                             )}
-                            {activeTab === 'moves' && (
-                                <div className="max-h-[250px] overflow-y-auto -mr-4 pr-4">
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-center">
-                                        {pokemon.moves.length > 0 ? (
-                                            pokemon.moves.map(({ move }) => (
-                                                <div key={move.name} className="bg-muted p-2 rounded-lg border-2 border-foreground font-medium text-sm shadow-neo-sm text-card-foreground">
-                                                    {capitalize(move.name.replace(/-/g, ' '))}
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <p className="col-span-full text-center text-muted-foreground py-8">No moves available for this Pokémon.</p>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-                            {activeTab === 'evolutions' && (
+                             {activeTab === 'evolutions' && (
                                 <div className="space-y-4">
                                     {allEvolutions.length > 1 ? (
-                                        <div className="flex justify-center items-center gap-2 flex-wrap">
+                                        <div className="flex justify-center items-center gap-2 sm:gap-4 flex-wrap">
                                             {allEvolutions.map((evo, index) => (
                                                 <React.Fragment key={evo.id}>
-                                                    <div className="flex flex-col items-center gap-1">
-                                                        <div className="bg-muted rounded-lg border-2 border-foreground p-2 w-24 h-24">
+                                                    <div className="flex flex-col items-center gap-1 text-center">
+                                                        <div className="bg-muted border-2 border-foreground p-2 w-24 h-24">
                                                             <div className="relative w-full h-full">
                                                                 <Image
-                                                                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${evo.id}.png`}
+                                                                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${evo.id}.png`}
                                                                     alt={evo.name}
                                                                     fill
                                                                     sizes="96px"
@@ -241,7 +220,8 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
                                                                 />
                                                             </div>
                                                         </div>
-                                                        <p className="font-semibold text-sm">{evo.name}</p>
+                                                        <p className="font-semibold text-xs uppercase mt-2">{evo.name}</p>
+                                                        <p className="text-xs text-muted-foreground">{formatPokemonId(evo.id)}</p>
                                                     </div>
                                                     {index < allEvolutions.length - 1 && (
                                                         <ArrowLeft className="w-8 h-8 rotate-180 text-gray-400" />
@@ -317,22 +297,25 @@ export default function PokemonDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="bg-background bg-[radial-gradient(hsl(var(--border))_1px,transparent_1px)] bg-[size:16px_16px] min-h-screen font-body">
-        <header className="py-4 px-4 md:px-8 border-b sticky top-0 z-10 bg-background/80 backdrop-blur-sm">
+      <div className="bg-background min-h-screen font-body">
+        <header className="py-4 px-4 md:px-8 border-b-4 border-foreground">
           <div className="container mx-auto flex items-center justify-between">
-            <Skeleton className="w-10 h-10 rounded-lg" />
-            <div className="flex flex-col items-center gap-1">
-              <Skeleton className="h-8 w-40" />
-              <Skeleton className="h-4 w-20" />
-            </div>
-            <Skeleton className="w-10 h-10 rounded-lg" />
+            <Skeleton className="h-9 w-24" />
+            <Skeleton className="h-9 w-9" />
           </div>
         </header>
         <main className="container mx-auto py-8 px-4 md:px-8">
-          <div className="max-w-2xl mx-auto space-y-4">
-            <Skeleton className="w-full aspect-square rounded-xl" />
-            <Skeleton className="w-32 h-10 mx-auto rounded-full" />
-            <Skeleton className="w-full h-48 rounded-xl" />
+          <div className="max-w-4xl mx-auto">
+             <div className="flex flex-col md:flex-row gap-8 items-center mb-8">
+                <Skeleton className="w-full max-w-[280px] aspect-square" />
+                <div className="flex-grow space-y-4">
+                    <Skeleton className="h-12 w-3/4" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-5/6" />
+                    <Skeleton className="h-8 w-1/3" />
+                </div>
+            </div>
+            <Skeleton className="w-full h-64" />
           </div>
         </main>
       </div>
@@ -340,8 +323,6 @@ export default function PokemonDetailPage() {
   }
   
   if (!pokemon) {
-    // This can happen on error after loading, or if notFound() is triggered.
-    // notFound() will throw an error that Next.js catches to show the 404 page.
     return null;
   }
   

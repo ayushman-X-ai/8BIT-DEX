@@ -44,43 +44,41 @@ export function PokemonFilter({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline">
+        <Button variant="outline" className="border-2 border-foreground">
           <Filter className="mr-2 h-4 w-4" />
           Filter
           {selectedTypes.length > 0 && (
             <>
-                <Separator orientation="vertical" className="h-4 mx-2" />
-                <Badge variant="secondary">{selectedTypes.length}</Badge>
+                <Separator orientation="vertical" className="h-4 mx-2 bg-foreground" />
+                <Badge variant="secondary" className="border-2 border-foreground">{selectedTypes.length}</Badge>
             </>
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80">
+      <PopoverContent className="w-64 border-2 border-foreground bg-popover">
         <div className="grid gap-4">
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-                <h4 className="font-medium leading-none">Filter by Type</h4>
+                <h4 className="font-medium leading-none uppercase text-sm">Filter by Type</h4>
                 {selectedTypes.length > 0 && (
-                    <Button variant="ghost" size="sm" onClick={clearFilters}>
+                    <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs h-auto py-1 px-2">
                         Clear
                     </Button>
                 )}
             </div>
-            <p className="text-sm text-muted-foreground">
-              Select one or more types to filter the Pokémon list.
-            </p>
           </div>
-          <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-2">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2 max-h-64 overflow-y-auto pr-2">
             {POKEMON_TYPES.map((type) => (
               <div key={type} className="flex items-center space-x-2">
                 <Checkbox
                   id={type}
                   checked={selectedTypes.includes(type)}
                   onCheckedChange={(checked) => handleTypeChange(type, !!checked)}
+                  className="border-2 border-foreground"
                 />
                 <Label
                   htmlFor={type}
-                  className="w-full font-normal cursor-pointer"
+                  className="w-full font-normal cursor-pointer text-xs uppercase"
                 >
                   {capitalize(type)}
                 </Label>
