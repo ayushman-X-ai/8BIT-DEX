@@ -97,7 +97,7 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
                 {icon}
                 <span className="font-bold text-xs uppercase">{label}</span>
             </div>
-            <p className="text-lg font-headline text-accent">
+            <p className="text-base sm:text-lg font-headline text-accent">
                 {value}
                 {unit && <span className="text-xs ml-1 text-muted-foreground">{unit}</span>}
             </p>
@@ -139,7 +139,7 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
                             <span className="absolute bottom-1 right-2 text-lg font-bold text-black/50">{formatPokemonId(pokemon.id)}</span>
                         </div>
                         <div className="flex-grow text-center md:text-left">
-                            <h1 className="text-4xl md:text-5xl font-bold font-headline uppercase tracking-wide text-foreground">{capitalize(pokemon.name)}</h1>
+                            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-headline uppercase tracking-wide text-foreground">{capitalize(pokemon.name)}</h1>
                             <p className="mt-2 text-muted-foreground leading-relaxed max-w-prose mx-auto md:mx-0 text-xs">{flavorText}</p>
                             <div className="flex justify-center md:justify-start gap-2 mt-4">
                                 {pokemon.types.map(({ type }) => (
@@ -194,7 +194,7 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
                                       <div key={stat.stat.name} className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-4">
                                         <div className="flex justify-between items-baseline sm:w-1/3">
                                           <p className="font-medium text-muted-foreground uppercase text-xs truncate">{stat.stat.name.replace('-', ' ')}</p>
-                                          <p className="font-bold text-lg sm:hidden">{stat.base_stat}</p>
+                                          <p className="font-bold text-base sm:hidden">{stat.base_stat}</p>
                                         </div>
                                         <div className="w-full sm:w-2/3 flex items-center gap-4">
                                             <StatBar value={stat.base_stat} max={255} />

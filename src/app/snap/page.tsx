@@ -25,7 +25,7 @@ const PokedexScanner = () => (
             }}
         />
 
-        <p className="font-headline text-xl text-primary animate-pulse z-10 tracking-widest drop-shadow-[2px_2px_0_hsl(var(--foreground)/0.5)]">
+        <p className="font-headline text-lg sm:text-xl text-primary animate-pulse z-10 tracking-widest drop-shadow-[2px_2px_0_hsl(var(--foreground)/0.5)]">
             IDENTIFYING...
         </p>
     </div>
@@ -203,7 +203,7 @@ export default function SnapPage() {
                         Back
                     </Button>
                 </Link>
-                 <h1 className="text-xl font-bold font-headline text-background uppercase tracking-wider text-center">
+                 <h1 className="text-lg sm:text-xl font-bold font-headline text-background uppercase tracking-wider text-center">
                     8Bit-Scanner
                  </h1>
                 <div className="w-[88px] sm:w-[100px] flex justify-end">
