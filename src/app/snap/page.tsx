@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Camera, RefreshCw, RadioTower } from 'lucide-react';
@@ -71,39 +71,39 @@ export default function SnapPage() {
     const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
 
+    const getCameraPermission = useCallback(async () => {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            console.error('Camera not supported on this browser.');
+            setHasCameraPermission(false);
+            toast({
+                variant: 'destructive',
+                title: 'Camera Not Supported',
+                description: 'Your browser does not support camera access.',
+            });
+            return;
+        }
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: 'environment' } 
+            });
+            setHasCameraPermission(true);
+
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+            }
+        } catch (error) {
+            console.error('Error accessing camera:', error);
+            setHasCameraPermission(false);
+            toast({
+                variant: 'destructive',
+                title: 'Camera Access Denied',
+                description: 'Please enable camera permissions in your browser settings.',
+            });
+        }
+    }, [toast]);
+
     useEffect(() => {
-        const getCameraPermission = async () => {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                console.error('Camera not supported on this browser.');
-                setHasCameraPermission(false);
-                toast({
-                    variant: 'destructive',
-                    title: 'Camera Not Supported',
-                    description: 'Your browser does not support camera access.',
-                });
-                return;
-            }
-
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: 'environment' } 
-                });
-                setHasCameraPermission(true);
-
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream;
-                }
-            } catch (error) {
-                console.error('Error accessing camera:', error);
-                setHasCameraPermission(false);
-                toast({
-                    variant: 'destructive',
-                    title: 'Camera Access Denied',
-                    description: 'Please enable camera permissions in your browser settings.',
-                });
-            }
-        };
-
         getCameraPermission();
 
         return () => {
@@ -112,7 +112,15 @@ export default function SnapPage() {
                 stream.getTracks().forEach(track => track.stop());
             }
         };
-    }, [toast]);
+    }, [getCameraPermission]);
+
+    const stopCameraStream = () => {
+        if (videoRef.current && videoRef.current.srcObject) {
+            const stream = videoRef.current.srcObject as MediaStream;
+            stream.getTracks().forEach((track) => track.stop());
+            videoRef.current.srcObject = null;
+        }
+    };
 
     const handleCapture = async () => {
         if (!videoRef.current || !canvasRef.current) return;
@@ -132,12 +140,7 @@ export default function SnapPage() {
         context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
         const photoDataUri = canvas.toDataURL('image/jpeg');
 
-        // Stop the camera stream here.
-        if (videoRef.current && videoRef.current.srcObject) {
-            const stream = videoRef.current.srcObject as MediaStream;
-            stream.getTracks().forEach((track) => track.stop());
-            videoRef.current.srcObject = null;
-        }
+        stopCameraStream();
 
         try {
             const result = await identifyPokemon({ photoDataUri });
@@ -147,9 +150,10 @@ export default function SnapPage() {
                 toast({
                     variant: 'destructive',
                     title: 'Identification Failed',
-                    description: 'Could not identify a Pokémon. Please try again with a clearer image.',
+                    description: 'Could not identify a Pokémon. Please try again.',
                 });
                 setIsProcessing(false);
+                getCameraPermission();
             }
         } catch (error) {
             console.error('AI identification error:', error);
@@ -159,6 +163,7 @@ export default function SnapPage() {
                 description: 'An error occurred while trying to identify the Pokémon.',
             });
             setIsProcessing(false);
+            getCameraPermission();
         }
     };
     
@@ -173,7 +178,7 @@ export default function SnapPage() {
                 </Link>
                  <h1 className="text-xl font-bold font-headline text-background uppercase tracking-wider text-center">
                     Poké-Scanner
-                </h1>
+                 </h1>
                 <div className="w-[88px] sm:w-[100px] flex justify-end">
                   <RadioTower className="text-background/50" />
                 </div>
