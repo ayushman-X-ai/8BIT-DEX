@@ -177,7 +177,7 @@ export default function SnapPage() {
                     </Button>
                 </Link>
                  <h1 className="text-xl font-bold font-headline text-background uppercase tracking-wider text-center">
-                    Poké-Scanner
+                    8Bit-Scanner
                  </h1>
                 <div className="w-[88px] sm:w-[100px] flex justify-end">
                   <RadioTower className="text-background/50" />
