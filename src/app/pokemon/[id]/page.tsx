@@ -189,14 +189,14 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
                                 </div>
                             )}
                             {activeTab === 'stats' && (
-                                <div className="space-y-3">
+                                <div className="space-y-4">
                                     {pokemon.stats.map(stat => (
-                                      <div key={stat.stat.name} className="grid grid-cols-4 items-center gap-2 sm:gap-4">
-                                        <p className="font-medium text-muted-foreground uppercase text-xs col-span-1 truncate">{stat.stat.name.replace('-', ' ')}</p>
-                                        <div className="col-span-3 flex items-center gap-4">
-                                            <StatBar value={stat.base_stat} max={255} />
-                                            <p className="font-bold text-lg w-12 text-right">{stat.base_stat}</p>
+                                      <div key={stat.stat.name} className="flex flex-col gap-1.5">
+                                        <div className="flex justify-between items-baseline">
+                                          <p className="font-medium text-muted-foreground uppercase text-xs truncate">{stat.stat.name.replace('-', ' ')}</p>
+                                          <p className="font-bold text-lg">{stat.base_stat}</p>
                                         </div>
+                                        <StatBar value={stat.base_stat} max={255} />
                                       </div>
                                     ))}
                                 </div>

@@ -162,15 +162,13 @@ export function PokemonExplainDialog({ pokemon }: PokemonExplainDialogProps) {
           {isLoadingEvolutions && (
             <div className="space-y-2">
                 <Skeleton className="h-5 w-1/3" />
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="flex flex-col items-center gap-2">
-                    <Skeleton className="h-20 w-20 rounded-md" />
-                    <Skeleton className="h-4 w-16" />
-                  </div>
-                    <div className="flex flex-col items-center gap-2">
-                    <Skeleton className="h-20 w-20 rounded-md" />
-                    <Skeleton className="h-4 w-16" />
-                  </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {Array.from({ length: 3 }).map((_, index) => (
+                    <div key={index} className="flex flex-col items-center gap-2">
+                      <Skeleton className="h-20 w-20 rounded-md" />
+                      <Skeleton className="h-4 w-16" />
+                    </div>
+                  ))}
                 </div>
             </div>
           )}
@@ -178,7 +176,7 @@ export function PokemonExplainDialog({ pokemon }: PokemonExplainDialogProps) {
           {!isLoadingEvolutions && evolutions.length > 0 && (
             <div>
               <h4 className="font-semibold text-foreground mb-2">Evolutions</h4>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {evolutions.map(evo => (
                     <div key={evo.id} className="flex flex-col items-center text-center">
                       <div className="relative aspect-square w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-md p-2">
