@@ -59,7 +59,7 @@ export function PokemonFilter({
         <div className="grid gap-4">
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-                <h4 className="font-medium leading-none uppercase text-sm">Filter by Type</h4>
+                <h4 className="font-medium leading-none uppercase text-xs">Filter by Type</h4>
                 {selectedTypes.length > 0 && (
                     <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs h-auto py-1 px-2">
                         Clear
