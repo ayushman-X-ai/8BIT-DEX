@@ -38,7 +38,7 @@ export function PokemonCard({ pokemon }: PokemonCardProps) {
             <h3 className="text-sm sm:text-base font-bold font-headline capitalize truncate">{capitalize(pokemon.name)}</h3>
             <div className="flex justify-center gap-1 sm:gap-2 mt-2">
               {pokemon.types.map(({ type }) => (
-                <Badge key={type.name} variant="outline" className="capitalize text-xs px-2 py-0.5 border-2 border-foreground">
+                <Badge key={type.name} variant="outline" className="capitalize text-[10px] px-1.5 py-0.5 border-2 border-foreground">
                   {type.name}
                 </Badge>
               ))}
