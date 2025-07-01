@@ -43,7 +43,7 @@ export default function Home() {
           <div className="flex items-center gap-2 sm:gap-4">
             <PixelPokeballIcon className="text-primary h-8 w-8" />
             <h1 className="text-xl sm:text-2xl font-bold font-headline text-foreground uppercase tracking-wider">
-              PokéDex
+              8BitDex
             </h1>
           </div>
           <div className="flex items-center gap-2">

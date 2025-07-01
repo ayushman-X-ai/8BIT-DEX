@@ -108,7 +108,7 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
         <div className="bg-background min-h-screen font-body text-xs sm:text-sm">
             <header className="py-4 px-4 md:px-8 border-b-4 border-foreground sticky top-0 z-10 bg-background">
                 <div className="container mx-auto flex items-center justify-between">
-                    <Link href="/" aria-label="Back to Pokédex">
+                    <Link href="/" aria-label="Back to 8BitDex">
                         <Button variant="outline" size="sm" className="border-2 border-foreground">
                             <ArrowLeft className="h-4 w-4 mr-2" />
                             Back

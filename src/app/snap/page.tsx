@@ -165,7 +165,7 @@ export default function SnapPage() {
     return (
         <div className="bg-foreground min-h-screen font-body flex flex-col">
             <header className="py-4 px-4 md:px-8 border-b-4 border-foreground/50 sticky top-0 z-10 bg-foreground flex items-center justify-between">
-                <Link href="/" aria-label="Back to Pokédex">
+                <Link href="/" aria-label="Back to 8BitDex">
                     <Button variant="outline" size="sm" className="border-2 border-foreground bg-background text-foreground hover:bg-accent hover:text-accent-foreground">
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Back
