@@ -44,7 +44,7 @@ export default function Home() {
         <div className="container mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 sm:gap-4">
             <LogoIcon className="h-8 w-8" />
-            <h1 className="text-xl sm:text-2xl font-bold font-headline text-foreground uppercase tracking-wider">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold font-headline text-foreground uppercase tracking-normal sm:tracking-wider">
               8BitDex
             </h1>
           </div>
