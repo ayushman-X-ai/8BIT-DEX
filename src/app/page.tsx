@@ -1,11 +1,16 @@
+'use client';
+
+import React from 'react';
+import { Search } from 'lucide-react';
 import { PokemonGrid } from '@/components/pokemon-grid';
+import { Input } from '@/components/ui/input';
 
 const PokeballIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="24"
     height="24"
-    viewBox="0 0 24 24"
+    viewBox="0 0 24"
     fill="none"
     stroke="currentColor"
     strokeWidth="2"
@@ -23,6 +28,8 @@ const PokeballIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 export default function Home() {
+  const [searchQuery, setSearchQuery] = React.useState('');
+
   return (
     <div className="bg-background min-h-screen">
       <header className="py-6 px-4 md:px-8 border-b sticky top-0 z-10 bg-background/80 backdrop-blur-sm">
@@ -34,7 +41,19 @@ export default function Home() {
         </div>
       </header>
       <main className="container mx-auto py-8 px-4 md:px-8">
-        <PokemonGrid />
+        <div className="mb-8 max-w-md mx-auto">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search Pokémon by name or ID..."
+              className="w-full pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </div>
+        <PokemonGrid searchQuery={searchQuery} />
       </main>
     </div>
   );

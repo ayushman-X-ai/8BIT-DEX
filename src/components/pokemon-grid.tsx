@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import type { Pokemon, PokemonListResult } from "@/types/pokemon";
 import { PokemonCard, PokemonCardSkeleton } from "@/components/pokemon-card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 const INITIAL_POKEAPI_URL = "https://pokeapi.co/api/v2/pokemon?limit=20";
 const MAX_POKEMON_ID = 1025;
 
-export function PokemonGrid() {
+export function PokemonGrid({ searchQuery }: { searchQuery: string }) {
   const [pokemonList, setPokemonList] = useState<Pokemon[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -89,6 +89,17 @@ export function PokemonGrid() {
     }
   };
 
+  const filteredPokemon = useMemo(() => {
+    const query = searchQuery.toLowerCase().trim();
+    if (!query) {
+      return pokemonList;
+    }
+    return pokemonList.filter(pokemon =>
+      pokemon.name.toLowerCase().includes(query) ||
+      String(pokemon.id).includes(query)
+    );
+  }, [pokemonList, searchQuery]);
+
   if (error && pokemonList.length === 0) {
     return <div className="text-destructive text-center">{error}</div>;
   }
@@ -96,7 +107,7 @@ export function PokemonGrid() {
   return (
     <div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-        {pokemonList.map((pokemon) => (
+        {filteredPokemon.map((pokemon) => (
           <PokemonCard key={pokemon.id} pokemon={pokemon} />
         ))}
         {isLoading &&
@@ -104,11 +115,19 @@ export function PokemonGrid() {
             <PokemonCardSkeleton key={`skeleton-${pokemonList.length + index}`} />
           ))}
       </div>
+
+      {searchQuery && filteredPokemon.length === 0 && !isLoading && (
+        <div className="text-center text-muted-foreground py-16">
+          <p className="text-lg font-semibold">No Pokémon found</p>
+          <p>Your search for &quot;{searchQuery}&quot; did not return any results.</p>
+        </div>
+      )}
+
       {error && (
         <div className="text-destructive text-center my-4">{error}</div>
       )}
       <div className="flex justify-center my-8">
-        {nextUrl && !isLoading && (
+        {!searchQuery && nextUrl && !isLoading && (
           <Button onClick={handleLoadMore}>Load More Pokémon</Button>
         )}
       </div>
