@@ -1,4 +1,4 @@
-# **App Name**: Kanto Dex
+# **App Name**: 8BIT-DEX
 
 ## Core Features:
 

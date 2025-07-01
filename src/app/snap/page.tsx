@@ -136,12 +136,20 @@ export default function SnapPage() {
 
     const handleCapture = async () => {
         if (!videoRef.current || !canvasRef.current) return;
+        
+        const video = videoRef.current;
+        if (video.readyState < video.HAVE_CURRENT_DATA || video.videoWidth === 0) {
+          toast({
+            variant: 'destructive',
+            title: 'Camera Error',
+            description: 'The camera is not ready yet. Please try again in a moment.',
+          });
+          return;
+        }
+
         setIsProcessing(true);
 
-        const video = videoRef.current;
         const canvas = canvasRef.current;
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
         const context = canvas.getContext('2d');
         if (!context) {
             setIsProcessing(false);
@@ -149,8 +157,15 @@ export default function SnapPage() {
             return;
         }
 
-        context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-        const photoDataUri = canvas.toDataURL('image/jpeg');
+        // Resize the image to a max dimension to avoid overly large uploads
+        const MAX_DIMENSION = 720;
+        const { videoWidth, videoHeight } = video;
+        const scale = Math.min(MAX_DIMENSION / videoWidth, MAX_DIMENSION / videoHeight, 1);
+        canvas.width = videoWidth * scale;
+        canvas.height = videoHeight * scale;
+
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const photoDataUri = canvas.toDataURL('image/jpeg', 0.9); // Use 90% quality
 
         stopCameraStream();
 
