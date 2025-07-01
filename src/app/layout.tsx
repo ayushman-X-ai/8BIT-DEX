@@ -6,6 +6,20 @@ import { ThemeProvider } from '@/components/theme-provider';
 export const metadata: Metadata = {
   title: 'Kanto Dex',
   description: 'A modern Pokédex to browse and learn about the first 151 Pokémon.',
+  manifest: '/manifest.json',
+  viewport: 'width=device-width, initial-scale=1',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Kanto Dex',
+  },
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#fcf7f2' },
+    { media: '(prefers-color-scheme: dark)', color: '#172133' },
+  ],
+  icons: {
+    apple: 'https://placehold.co/180x180.png',
+  },
 };
 
 export default function RootLayout({

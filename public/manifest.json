@@ -1,0 +1,22 @@
+{
+  "name": "Kanto Dex",
+  "short_name": "PokéDex",
+  "description": "A modern Pokédex to browse and learn about the first 151 Pokémon.",
+  "icons": [
+    {
+      "src": "https://placehold.co/192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://placehold.co/512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#172133",
+  "background_color": "#fcf7f2",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait"
+}
