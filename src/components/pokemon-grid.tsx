@@ -1,20 +1,48 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { Pokemon, PokemonListResult } from "@/types/pokemon";
 import { PokemonCard, PokemonCardSkeleton } from "@/components/pokemon-card";
 import { Button } from "@/components/ui/button";
 
 const INITIAL_POKEAPI_URL = "https://pokeapi.co/api/v2/pokemon?limit=20";
-const MAX_POKEMON_ID = 1025;
+const ALL_POKEMON_URL = "https://pokeapi.co/api/v2/pokemon?limit=1025";
 
 export function PokemonGrid({ searchQuery }: { searchQuery: string }) {
+  // Master list for searching
+  const [allPokemonList, setAllPokemonList] = useState<PokemonListResult[]>([]);
+  
+  // List for browsing/paginating
   const [pokemonList, setPokemonList] = useState<Pokemon[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [nextUrl, setNextUrl] = useState<string | null>(null);
+  const [nextUrl, setNextUrl] = useState<string | null>(INITIAL_POKEAPI_URL);
+  
+  // List for displaying search results
+  const [searchedPokemon, setSearchedPokemon] = useState<Pokemon[]>([]);
 
-  const fetchPokemon = useCallback(async (url: string) => {
+  // Loading and error states
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingSearch, setIsLoadingSearch] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch all pokemon names/urls for the search functionality
+  useEffect(() => {
+    async function fetchAllPokemon() {
+      try {
+        const response = await fetch(ALL_POKEMON_URL);
+        if (!response.ok) {
+          throw new Error("Failed to fetch the complete Pokémon list");
+        }
+        const data = await response.json();
+        setAllPokemonList(data.results);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    fetchAllPokemon();
+  }, []);
+  
+  // Fetch a page of pokemon for browsing
+  const fetchPokemonPage = useCallback(async (url: string) => {
     if (!url) return;
 
     setIsLoading(true);
@@ -26,97 +54,121 @@ export function PokemonGrid({ searchQuery }: { searchQuery: string }) {
         throw new Error("Failed to fetch Pokémon list");
       }
       const data = await response.json();
-      
-      const filteredResults = data.results.filter(
-        (p: PokemonListResult) => {
-          const urlParts = p.url.split("/");
-          const id = parseInt(urlParts[urlParts.length - 2]);
-          return id <= MAX_POKEMON_ID;
-        }
-      );
+      setNextUrl(data.next);
 
-      if (!data.next || filteredResults.length < data.results.length) {
-        setNextUrl(null);
-      } else {
-        setNextUrl(data.next);
-      }
-
-      const pokemonPromises: Promise<Pokemon | null>[] = filteredResults.map(
+      const pokemonPromises: Promise<Pokemon | null>[] = data.results.map(
         async (p: PokemonListResult) => {
           try {
             const res = await fetch(p.url);
-            if (!res.ok) {
-              console.error(`Failed to fetch details for ${p.name}`);
-              return null;
-            }
+            if (!res.ok) return null;
             return res.json();
           } catch (e) {
-            console.error(`Error fetching details for ${p.name}:`, e);
             return null;
           }
         }
       );
 
-      const settledPokemon = await Promise.all(pokemonPromises);
-      const newPokemon = settledPokemon.filter((p) => p !== null) as Pokemon[];
+      const newPokemon = (await Promise.all(pokemonPromises)).filter(Boolean) as Pokemon[];
 
       setPokemonList((prevList) => {
         const existingIds = new Set(prevList.map((p) => p.id));
-        const uniqueNewPokemon = newPokemon.filter(
-          (p) => !existingIds.has(p.id)
-        );
+        const uniqueNewPokemon = newPokemon.filter((p) => !existingIds.has(p.id));
         const combined = [...prevList, ...uniqueNewPokemon];
         combined.sort((a, b) => a.id - b.id);
         return combined;
       });
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "An unknown error occurred"
-      );
+      setError(err instanceof Error ? err.message : "An unknown error occurred");
     } finally {
       setIsLoading(false);
     }
   }, []);
 
+  // Trigger initial fetch
   useEffect(() => {
-    // Initial fetch
-    fetchPokemon(INITIAL_POKEAPI_URL);
-  }, [fetchPokemon]);
+    if (pokemonList.length === 0) {
+      fetchPokemonPage(INITIAL_POKEAPI_URL);
+    }
+  }, [fetchPokemonPage, pokemonList.length]);
+
+  // Handle search logic
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+        setSearchedPokemon([]);
+        setIsLoadingSearch(false);
+        return;
+    }
+
+    const search = async () => {
+        if (allPokemonList.length === 0) return; // Wait for master list
+
+        setIsLoadingSearch(true);
+        setError(null);
+        
+        const query = searchQuery.toLowerCase().trim();
+        const filtered = allPokemonList.filter(pokemon =>
+            pokemon.name.toLowerCase().includes(query) ||
+            pokemon.url.split('/')[6].includes(query)
+        );
+
+        try {
+            const pokemonPromises: Promise<Pokemon | null>[] = filtered.map(
+                async (p: PokemonListResult) => {
+                    try {
+                        const res = await fetch(p.url);
+                        if (!res.ok) return null;
+                        return res.json();
+                    } catch (e) {
+                        return null;
+                    }
+                }
+            );
+            const newPokemon = (await Promise.all(pokemonPromises)).filter(Boolean) as Pokemon[];
+            newPokemon.sort((a,b) => a.id - b.id);
+            setSearchedPokemon(newPokemon);
+        } catch (err) {
+            setError("Failed to fetch search results.");
+        } finally {
+            setIsLoadingSearch(false);
+        }
+    }
+    
+    const debounceTimer = setTimeout(() => {
+        search();
+    }, 300);
+
+    return () => clearTimeout(debounceTimer);
+
+  }, [searchQuery, allPokemonList]);
 
   const handleLoadMore = () => {
     if (nextUrl && !isLoading) {
-      fetchPokemon(nextUrl);
+      fetchPokemonPage(nextUrl);
     }
   };
 
-  const filteredPokemon = useMemo(() => {
-    const query = searchQuery.toLowerCase().trim();
-    if (!query) {
-      return pokemonList;
-    }
-    return pokemonList.filter(pokemon =>
-      pokemon.name.toLowerCase().includes(query) ||
-      String(pokemon.id).includes(query)
-    );
-  }, [pokemonList, searchQuery]);
+  const isSearching = searchQuery.trim().length > 0;
+  const pokemonToDisplay = isSearching ? searchedPokemon : pokemonList;
+  const showLoadingSkeletons = isSearching ? isLoadingSearch : isLoading;
+  const showNoResultsMessage = isSearching && !isLoadingSearch && pokemonToDisplay.length === 0;
 
-  if (error && pokemonList.length === 0) {
+  if (error && pokemonList.length === 0 && !isSearching) {
     return <div className="text-destructive text-center">{error}</div>;
   }
-
+  
   return (
     <div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-        {filteredPokemon.map((pokemon) => (
+        {pokemonToDisplay.map((pokemon) => (
           <PokemonCard key={pokemon.id} pokemon={pokemon} />
         ))}
-        {isLoading &&
+        {showLoadingSkeletons &&
           Array.from({ length: 20 }).map((_, index) => (
             <PokemonCardSkeleton key={`skeleton-${pokemonList.length + index}`} />
           ))}
       </div>
 
-      {searchQuery && filteredPokemon.length === 0 && !isLoading && (
+      {showNoResultsMessage && (
         <div className="text-center text-muted-foreground py-16">
           <p className="text-lg font-semibold">No Pokémon found</p>
           <p>Your search for &quot;{searchQuery}&quot; did not return any results.</p>
@@ -127,7 +179,7 @@ export function PokemonGrid({ searchQuery }: { searchQuery: string }) {
         <div className="text-destructive text-center my-4">{error}</div>
       )}
       <div className="flex justify-center my-8">
-        {!searchQuery && nextUrl && !isLoading && (
+        {!isSearching && nextUrl && !isLoading && (
           <Button onClick={handleLoadMore}>Load More Pokémon</Button>
         )}
       </div>
