@@ -83,23 +83,35 @@ export default function SnapPage() {
             return;
         }
 
+        let stream;
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ 
+            // First, try to get the environment-facing camera (for phones)
+            stream = await navigator.mediaDevices.getUserMedia({ 
                 video: { facingMode: 'environment' } 
             });
-            setHasCameraPermission(true);
+        } catch (error) {
+            console.warn('Could not get environment camera, trying default camera.', error);
+            // If that fails, fall back to any available video camera (for laptops, etc.)
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            } catch (fallbackError) {
+                console.error('Error accessing any camera:', fallbackError);
+                setHasCameraPermission(false);
+                toast({
+                    variant: 'destructive',
+                    title: 'Camera Access Denied',
+                    description: 'Please enable camera permissions in your browser settings.',
+                });
+                return;
+            }
+        }
 
+        // If we have a stream, set it up
+        if (stream) {
+            setHasCameraPermission(true);
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
             }
-        } catch (error) {
-            console.error('Error accessing camera:', error);
-            setHasCameraPermission(false);
-            toast({
-                variant: 'destructive',
-                title: 'Camera Access Denied',
-                description: 'Please enable camera permissions in your browser settings.',
-            });
         }
     }, [toast]);
 
