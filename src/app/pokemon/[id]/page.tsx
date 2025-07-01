@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, ReactElement } from "react";
+import React, { useState, useEffect, ReactElement } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, useParams } from "next/navigation";
