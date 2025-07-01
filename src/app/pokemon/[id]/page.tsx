@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect, ReactElement } from "react";
+import React, { useState, useEffect, ReactElement, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, useParams } from "next/navigation";
@@ -260,7 +260,7 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
 }
 
 export default function PokemonDetailPage() {
-  const params = useParams();
+  const params = use(useParams());
   const id = (Array.isArray(params.id) ? params.id[0] : params.id) as string;
 
   const [pokemon, setPokemon] = useState<CombinedPokemonData | null>(null);
