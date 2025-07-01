@@ -6,6 +6,7 @@ import { PokemonCard, PokemonCardSkeleton } from "@/components/pokemon-card";
 import { Button } from "@/components/ui/button";
 
 const INITIAL_POKEAPI_URL = "https://pokeapi.co/api/v2/pokemon?limit=20";
+const MAX_POKEMON_ID = 1025;
 
 export function PokemonGrid() {
   const [pokemonList, setPokemonList] = useState<Pokemon[]>([]);
@@ -25,9 +26,22 @@ export function PokemonGrid() {
         throw new Error("Failed to fetch Pokémon list");
       }
       const data = await response.json();
-      setNextUrl(data.next);
+      
+      const filteredResults = data.results.filter(
+        (p: PokemonListResult) => {
+          const urlParts = p.url.split("/");
+          const id = parseInt(urlParts[urlParts.length - 2]);
+          return id <= MAX_POKEMON_ID;
+        }
+      );
 
-      const pokemonPromises: Promise<Pokemon | null>[] = data.results.map(
+      if (!data.next || filteredResults.length < data.results.length) {
+        setNextUrl(null);
+      } else {
+        setNextUrl(data.next);
+      }
+
+      const pokemonPromises: Promise<Pokemon | null>[] = filteredResults.map(
         async (p: PokemonListResult) => {
           try {
             const res = await fetch(p.url);
