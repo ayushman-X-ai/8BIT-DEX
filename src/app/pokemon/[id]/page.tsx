@@ -16,6 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 
 // --- START: ICONS ---
 const WaterDropIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -89,19 +90,26 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
     const allEvolutions = parseEvolutionChain(pokemon.evolutionChain?.chain);
 
     return (
-        <div className="bg-[#F3F4F6] bg-[radial-gradient(#E5E7EB_1px,transparent_1px)] bg-[size:16px_16px] min-h-screen font-body">
-            <div className="max-w-md mx-auto bg-white border-x-4 border-red-500 min-h-screen">
-                <header className="flex items-center justify-between p-4">
+        <div className="bg-background bg-[radial-gradient(hsl(var(--border))_1px,transparent_1px)] bg-[size:16px_16px] min-h-screen font-body">
+            <header className="py-4 px-4 md:px-8 border-b sticky top-0 z-10 bg-background/80 backdrop-blur-sm">
+                <div className="container mx-auto flex items-center justify-between">
                     <Link href="/" aria-label="Back to Pokédex">
-                        <ArrowLeft className="h-6 w-6" />
+                        <Button variant="ghost" size="icon">
+                            <ArrowLeft className="h-6 w-6" />
+                        </Button>
                     </Link>
-                    <h1 className="text-2xl font-bold">{capitalize(pokemon.name)}</h1>
-                    <button onClick={() => setIsFavorite(p => !p)} aria-label="Toggle Favorite">
-                        <Heart className={cn("h-6 w-6", isFavorite ? "text-red-500 fill-current" : "text-black")} />
-                    </button>
-                </header>
+                    <div className="flex flex-col items-center">
+                        <h1 className="text-3xl font-bold font-headline">{capitalize(pokemon.name)}</h1>
+                        <p className="text-muted-foreground font-mono">{formatPokemonId(pokemon.id)}</p>
+                    </div>
+                    <Button variant="ghost" size="icon" onClick={() => setIsFavorite(p => !p)} aria-label="Toggle Favorite">
+                        <Heart className={cn("h-6 w-6", isFavorite ? "text-red-500 fill-current" : "text-foreground/50")} />
+                    </Button>
+                </div>
+            </header>
 
-                <main className="p-4">
+            <main className="container mx-auto py-8 px-4 md:px-8">
+                <div className="max-w-2xl mx-auto">
                     <div className="rounded-xl border-2 border-black shadow-[4px_4px_0_#000] p-2 bg-white">
                         <div className="relative aspect-square rounded-lg overflow-hidden">
                             <div className="absolute inset-0 bg-[#F87171] top-0 h-1/2"></div>
@@ -245,8 +253,8 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
                             )}
                         </div>
                     </div>
-                </main>
-            </div>
+                </div>
+            </main>
         </div>
     )
 }
@@ -306,20 +314,25 @@ export default function PokemonDetailPage() {
 
   if (isLoading) {
     return (
-        <div className="bg-[#F3F4F6] bg-[radial-gradient(#E5E7EB_1px,transparent_1px)] bg-[size:16px_16px] min-h-screen">
-            <div className="max-w-md mx-auto bg-white border-x-4 border-red-500 min-h-screen p-4 space-y-4">
-                <header className="flex items-center justify-between">
-                    <Skeleton className="w-8 h-8 rounded-full" />
-                    <Skeleton className="w-32 h-8" />
-                    <Skeleton className="w-8 h-8 rounded-full" />
-                </header>
-                <main className="space-y-4">
-                    <Skeleton className="w-full aspect-square rounded-xl border-2 border-black shadow-[4px_4px_0_#000]" />
-                    <Skeleton className="w-32 h-10 mx-auto rounded-full border-2 border-black shadow-[2px_2px_0_#000]" />
-                    <Skeleton className="w-full h-48 rounded-xl border-2 border-black shadow-[4px_4px_0_#000]" />
-                </main>
+      <div className="bg-background bg-[radial-gradient(hsl(var(--border))_1px,transparent_1px)] bg-[size:16px_16px] min-h-screen font-body">
+        <header className="py-4 px-4 md:px-8 border-b sticky top-0 z-10 bg-background/80 backdrop-blur-sm">
+          <div className="container mx-auto flex items-center justify-between">
+            <Skeleton className="w-10 h-10 rounded-lg" />
+            <div className="flex flex-col items-center gap-1">
+              <Skeleton className="h-8 w-40" />
+              <Skeleton className="h-4 w-20" />
             </div>
-        </div>
+            <Skeleton className="w-10 h-10 rounded-lg" />
+          </div>
+        </header>
+        <main className="container mx-auto py-8 px-4 md:px-8">
+          <div className="max-w-2xl mx-auto space-y-4">
+            <Skeleton className="w-full aspect-square rounded-xl" />
+            <Skeleton className="w-32 h-10 mx-auto rounded-full" />
+            <Skeleton className="w-full h-48 rounded-xl" />
+          </div>
+        </main>
+      </div>
     );
   }
   
