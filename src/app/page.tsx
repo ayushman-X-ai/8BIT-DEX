@@ -61,7 +61,7 @@ export default function Home() {
       <main className="container mx-auto py-8 px-4 md:px-8">
         <div className="mb-8 bg-card border-2 border-foreground">
           <div className="p-2 border-b-2 border-foreground">
-            <h2 className="font-bold uppercase text-xs sm:text-sm text-center sm:text-left">Control Panel</h2>
+            <h2 className="font-bold uppercase text-xs sm:text-sm text-center">Control Panel</h2>
           </div>
           <div className="p-4 flex flex-col sm:flex-row gap-4 justify-center items-center">
             <div className="relative w-full max-w-md">
