@@ -9,28 +9,29 @@ import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { PokemonFilter } from '@/components/pokemon-filter';
 
-const PixelPokeballIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      stroke="none"
-      {...props}
-    >
-        {/* Outer Black shell */}
-        <path fill="hsl(var(--foreground))" d="M9 2h6v1h2v1h1v1h1v2h1v6h-1v2h-1v1h-1v1h-2v1H9v-1H7v-1H6v-1H5v-2H4V8h1V6h1V5h2V4h1V3z" />
-        {/* Red Top */}
-        <path fill="hsl(var(--primary))" d="M9 4h6v1h1v1h1v3H7V6h1V5h1V4z" />
-        {/* Glint on top */}
-        <path fill="#FFF" opacity="0.7" d="M10 5h2v1h1v1h-1v-1h-2V5z" />
-        {/* White Bottom */}
-        <path fill="#FFF" d="M7 13h10v1h1v1h-1v1h-1v1H8v-1H7v-1H6v-1h1v-1z" />
-        {/* Separator Line */}
-        <path fill="hsl(var(--foreground))" d="M5 11h14v2H5z" />
-        {/* Button */}
-        <path fill="hsl(var(--foreground))" d="M9 10h6v4H9z" />
-        <path fill="#FFF" d="M10 11h4v2h-4z" />
-    </svg>
+const LogoIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    stroke="none"
+    {...props}
+  >
+    {/* Body */}
+    <path fill="hsl(var(--primary))" d="M5 3h14v1h1v16h-1v1H5v-1H4V4h1V3z" />
+    {/* Inner body fill */}
+    <path fill="hsl(var(--primary))" d="M5 4h14v16H5z" />
+    {/* Screen Bezel */}
+    <path fill="hsl(var(--foreground))" d="M7 6h10v9H7z" />
+    {/* Screen */}
+    <path fill="hsl(var(--background))" d="M8 7h8v7H8z" />
+    {/* Green light on screen */}
+    <path fill="lime" d="M9 8h1v1H9z" />
+    {/* D-Pad */}
+    <path fill="hsl(var(--foreground))" d="M8 17h3v1H8zm1-1h1v3H9z" />
+    {/* A and B buttons */}
+    <path fill="hsl(var(--foreground))" d="M14 16h2v2h-2zm-2 2h2v2h-2z" />
+  </svg>
 );
 
 
@@ -43,7 +44,7 @@ export default function Home() {
       <header className="py-4 px-4 md:px-8 border-b-4 border-foreground sticky top-0 z-10 bg-background">
         <div className="container mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 sm:gap-4">
-            <PixelPokeballIcon className="text-primary h-8 w-8" />
+            <LogoIcon className="h-8 w-8" />
             <h1 className="text-xl sm:text-2xl font-bold font-headline text-foreground uppercase tracking-wider">
               8BitDex
             </h1>
