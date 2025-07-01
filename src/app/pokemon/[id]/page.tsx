@@ -175,11 +175,11 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
                                         {gender ? (
                                             <div className="flex items-center gap-4">
                                                 <div className="w-full border-2 border-foreground flex h-6 p-0.5 bg-muted">
-                                                    <div style={{width: `${gender.male}%`}} className="h-full bg-blue-500"></div>
-                                                    <div style={{width: `${gender.female}%`}} className="h-full bg-pink-500"></div>
+                                                    <div style={{width: `${gender.male}%`}} className="h-full bg-chart-2"></div>
+                                                    <div style={{width: `${gender.female}%`}} className="h-full bg-chart-5"></div>
                                                 </div>
                                                 <div className="flex-shrink-0">
-                                                    <span className="text-blue-400 font-bold">{gender.male}% M</span> / <span className="text-pink-400 font-bold">{gender.female}% F</span>
+                                                    <span className="text-chart-2 font-bold">{gender.male}% M</span> / <span className="text-chart-5 font-bold">{gender.female}% F</span>
                                                 </div>
                                             </div>
                                         ) : (

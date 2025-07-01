@@ -59,21 +59,26 @@ export default function Home() {
         </div>
       </header>
       <main className="container mx-auto py-8 px-4 md:px-8">
-        <div className="mb-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <div className="relative w-full max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search by name or ID..."
-              className="w-full pl-9 border-2 border-foreground bg-input text-xs sm:text-sm"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+        <div className="mb-8 bg-card border-2 border-foreground">
+          <div className="p-2 border-b-2 border-foreground">
+            <h2 className="font-bold uppercase text-xs sm:text-sm text-center sm:text-left">Control Panel</h2>
+          </div>
+          <div className="p-4 flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="relative w-full max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search by name or ID..."
+                className="w-full pl-9 border-2 border-foreground bg-input text-xs sm:text-sm"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <PokemonFilter
+              selectedTypes={selectedTypes}
+              onSelectedTypesChange={setSelectedTypes}
             />
           </div>
-          <PokemonFilter
-            selectedTypes={selectedTypes}
-            onSelectedTypesChange={setSelectedTypes}
-          />
         </div>
         <PokemonGrid searchQuery={searchQuery} selectedTypes={selectedTypes} />
       </main>
