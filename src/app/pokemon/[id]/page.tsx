@@ -152,10 +152,10 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
                     </div>
                     
                     <div className="w-full">
-                        <div className="flex border-b-2 border-foreground mb-4">
-                            {['About', 'Stats', 'Stages'].map(tab => (
+                        <div className="flex border-b-2 border-foreground mb-4 overflow-x-auto">
+                            {['About', 'Stats', 'Stages', 'Profile', 'Moves'].map(tab => (
                                 <button key={tab} onClick={() => setActiveTab(tab.toLowerCase())} className={cn(
-                                    "px-4 py-2 font-bold text-sm uppercase -mb-[2px] text-muted-foreground border-2 border-transparent",
+                                    "px-4 py-2 font-bold text-sm uppercase -mb-[2px] text-muted-foreground border-2 border-transparent flex-shrink-0",
                                     activeTab === tab.toLowerCase() && "bg-card border-foreground border-b-card text-accent"
                                 )}>
                                     {tab}
@@ -227,7 +227,7 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
                                                         <p className="text-xs text-muted-foreground">{formatPokemonId(evo.id)}</p>
                                                     </div>
                                                     {index < allEvolutions.length - 1 && (
-                                                        <ArrowLeft className="w-8 h-8 rotate-180 text-gray-400" />
+                                                        <ArrowLeft className="w-8 h-8 rotate-180 text-gray-400 hidden sm:block" />
                                                     )}
                                                 </React.Fragment>
                                             ))}
@@ -235,6 +235,41 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
                                     ) : (
                                        <p className="text-center text-muted-foreground py-8">This Pokémon does not evolve.</p>
                                     )}
+                                </div>
+                            )}
+                            {activeTab === 'profile' && (
+                                <div className="space-y-6">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
+                                        <div>
+                                            <h4 className="font-bold uppercase text-muted-foreground mb-2 text-xs">Habitat</h4>
+                                            <p className="font-bold text-foreground">{pokemon.habitat ? capitalize(pokemon.habitat.name) : 'Unknown'}</p>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold uppercase text-muted-foreground mb-2 text-xs">Shape</h4>
+                                            <p className="font-bold text-foreground">{pokemon.shape ? capitalize(pokemon.shape.name) : 'Unknown'}</p>
+                                        </div>
+                                        <div className="sm:col-span-2">
+                                            <h4 className="font-bold uppercase text-muted-foreground mb-2 text-xs">Egg Groups</h4>
+                                            <div className="flex flex-wrap gap-2">
+                                                {pokemon.egg_groups.map((group) => (
+                                                    <div key={group.name} className="px-3 py-1 border-2 border-foreground font-bold text-xs uppercase bg-muted">
+                                                        {capitalize(group.name)}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            {activeTab === 'moves' && (
+                                <div className="max-h-[300px] overflow-y-auto pr-2 -mr-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                                        {pokemon.moves.map(({ move }) => (
+                                            <div key={move.name} className="bg-muted p-2 text-foreground truncate text-xs font-medium border-2 border-foreground/10">
+                                                {capitalize(move.name)}
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
                         </div>

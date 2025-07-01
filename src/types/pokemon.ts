@@ -61,4 +61,16 @@ export interface PokemonSpecies {
   evolution_chain: {
     url: string;
   };
+  egg_groups: {
+    name: string;
+    url: string;
+  }[];
+  habitat: {
+    name: string;
+    url: string;
+  } | null;
+  shape: {
+    name: string;
+    url: string;
+  } | null;
 }
