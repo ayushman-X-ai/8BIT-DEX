@@ -1,9 +1,11 @@
 'use client';
 
 import React from 'react';
-import { Search } from 'lucide-react';
+import Link from 'next/link';
+import { Search, Camera } from 'lucide-react';
 import { PokemonGrid } from '@/components/pokemon-grid';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { PokemonFilter } from '@/components/pokemon-filter';
 
@@ -44,7 +46,14 @@ export default function Home() {
               PokéDex
             </h1>
           </div>
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <Link href="/snap" aria-label="Snap to Identify Pokémon">
+              <Button variant="outline" size="icon" className="border-2 border-foreground">
+                  <Camera className="h-4 w-4" />
+              </Button>
+            </Link>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
       <main className="container mx-auto py-8 px-4 md:px-8">
