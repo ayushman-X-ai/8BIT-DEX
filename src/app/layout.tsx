@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   },
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#fcf7f2' },
-    { media: '(prefers-color-scheme: dark)', color: '#181e2d' },
+    { media: '(prefers-color-scheme: dark)', color: '#000000' },
   ],
   icons: {
     apple: 'https://placehold.co/180x180.png',
