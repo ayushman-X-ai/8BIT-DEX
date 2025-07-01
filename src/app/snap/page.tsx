@@ -3,17 +3,62 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Camera, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Camera, RefreshCw, RadioTower } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { identifyPokemon } from '@/ai/flows/identify-pokemon-flow';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
+// New, more retro scanner animation
 const PokedexScanner = () => (
-    <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center z-20">
-        <RefreshCw className="h-16 w-16 animate-spin text-primary" />
-        <p className="font-headline text-lg text-foreground mt-4 tracking-wider">IDENTIFYING...</p>
+    <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center z-20 overflow-hidden">
+        {/* Scanline effect */}
+        <div className="absolute left-0 w-full h-2 bg-primary/70 shadow-[0_0_10px_theme(colors.primary)] animate-scanline z-20" />
+        
+        {/* Pixel grid overlay */}
+        <div 
+            className="absolute inset-0" 
+            style={{
+                backgroundImage: 'linear-gradient(hsl(var(--foreground)/0.05) 1px, transparent 1px), linear-gradient(to right, hsl(var(--foreground)/0.05) 1px, transparent 1px)',
+                backgroundSize: '3px 3px',
+            }}
+        />
+
+        <p className="font-headline text-xl text-primary animate-pulse z-10 tracking-widest drop-shadow-[2px_2px_0_hsl(var(--foreground)/0.5)]">
+            IDENTIFYING...
+        </p>
+    </div>
+);
+
+// New, more detailed camera frame
+const CameraFrame = () => (
+    <div className="absolute inset-0 pointer-events-none p-2" aria-hidden="true">
+        <div className="w-full h-full relative">
+            {/* Main corner brackets */}
+            <div className="absolute top-0 left-0 w-10 h-10 border-t-4 border-l-4 border-accent"></div>
+            <div className="absolute top-0 right-0 w-10 h-10 border-t-4 border-r-4 border-accent"></div>
+            <div className="absolute bottom-0 left-0 w-10 h-10 border-b-4 border-l-4 border-accent"></div>
+            <div className="absolute bottom-0 right-0 w-10 h-10 border-b-4 border-r-4 border-accent"></div>
+            
+            {/* Center targeting reticle */}
+            <div className="absolute top-1/2 left-1/2 w-20 h-20 -translate-x-1/2 -translate-y-1/2">
+                <div className="absolute top-0 left-0 w-5 h-px bg-accent/80"></div>
+                <div className="absolute top-0 left-0 w-px h-5 bg-accent/80"></div>
+                <div className="absolute top-0 right-0 w-5 h-px bg-accent/80"></div>
+                <div className="absolute top-0 right-0 w-px h-5 bg-accent/80"></div>
+                <div className="absolute bottom-0 left-0 w-5 h-px bg-accent/80"></div>
+                <div className="absolute bottom-0 left-0 w-px h-5 bg-accent/80"></div>
+                <div className="absolute bottom-0 right-0 w-5 h-px bg-accent/80"></div>
+                <div className="absolute bottom-0 right-0 w-px h-5 bg-accent/80"></div>
+            </div>
+
+            {/* Top Info Bar */}
+            <div className="absolute top-2 left-12 right-12 flex justify-between items-center text-accent font-code text-xs">
+                <span>REC</span>
+                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+            </div>
+        </div>
     </div>
 );
 
@@ -109,36 +154,31 @@ export default function SnapPage() {
             setIsProcessing(false);
         }
     };
-
-    const CameraFrame = () => (
-      <div className="absolute inset-0 pointer-events-none flex items-center justify-center p-8">
-        <div className="w-full h-full border-4 border-dashed border-white/50 relative">
-          {/* Corners */}
-          <div className="absolute -top-1 -left-1 w-8 h-8 border-t-4 border-l-4 border-accent"></div>
-          <div className="absolute -top-1 -right-1 w-8 h-8 border-t-4 border-r-4 border-accent"></div>
-          <div className="absolute -bottom-1 -left-1 w-8 h-8 border-b-4 border-l-4 border-accent"></div>
-          <div className="absolute -bottom-1 -right-1 w-8 h-8 border-b-4 border-r-4 border-accent"></div>
-        </div>
-      </div>
-    );
-
+    
     return (
-        <div className="bg-background min-h-screen font-body flex flex-col">
-            <header className="py-4 px-4 md:px-8 border-b-4 border-foreground sticky top-0 z-10 bg-background flex items-center justify-between">
+        <div className="bg-foreground min-h-screen font-body flex flex-col">
+            <header className="py-4 px-4 md:px-8 border-b-4 border-foreground/50 sticky top-0 z-10 bg-foreground flex items-center justify-between">
                 <Link href="/" aria-label="Back to Pokédex">
-                    <Button variant="outline" size="sm" className="border-2 border-foreground">
+                    <Button variant="outline" size="sm" className="border-2 border-foreground bg-background text-foreground hover:bg-accent hover:text-accent-foreground">
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Back
                     </Button>
                 </Link>
-                 <h1 className="text-xl font-bold font-headline text-foreground uppercase tracking-wider text-center">
-                    Snap & Identify
+                 <h1 className="text-xl font-bold font-headline text-background uppercase tracking-wider text-center">
+                    Poké-Scanner
                 </h1>
-                <div className="w-[88px] sm:w-[100px]"></div> {/* Spacer */}
+                <div className="w-[88px] sm:w-[100px] flex justify-end">
+                  <RadioTower className="text-background/50" />
+                </div>
             </header>
 
-            <main className="flex-grow flex flex-col items-center justify-center p-4">
-                <div className="relative w-full max-w-md aspect-[4/3] bg-foreground/20 border-4 border-foreground overflow-hidden">
+            <main className="flex-grow flex flex-col items-center justify-center p-4 bg-black">
+                <div className="w-full max-w-md space-y-2 text-center mb-4">
+                    <p className="font-code text-xs text-green-400 uppercase">SYSTEM STATUS: <span className="text-white">ONLINE</span></p>
+                    <p className="font-code text-xs text-green-400 uppercase">TARGETING: <span className="text-white">POKÉMON</span></p>
+                </div>
+
+                <div className="relative w-full max-w-md aspect-[4/3] bg-black border-4 border-foreground overflow-hidden shadow-[inset_0_0_10px_black,0_0_10px_hsl(var(--primary)/0.5)]">
                     {isProcessing && <PokedexScanner />}
                     <video ref={videoRef} className="w-full h-full object-cover" autoPlay playsInline muted />
                     <CameraFrame />
@@ -159,16 +199,20 @@ export default function SnapPage() {
                         </div>
                     )}
                 </div>
-                <div className="mt-8">
-                    <Button
-                        size="lg"
-                        className="h-16 w-16 rounded-full border-4 border-foreground bg-primary hover:bg-primary/90 focus-visible:ring-offset-8"
-                        onClick={handleCapture}
-                        disabled={isProcessing || hasCameraPermission !== true}
-                        aria-label="Capture Pokémon"
-                    >
-                        <Camera className="h-8 w-8 text-primary-foreground" />
-                    </Button>
+                <div className="mt-6 w-full max-w-md p-4 bg-foreground/20 border-t-4 border-foreground">
+                    <div className="flex items-center justify-center gap-6">
+                        <div className="w-8 h-8 bg-primary rounded-full border-2 border-foreground animate-pulse" />
+                        <Button
+                            size="lg"
+                            className="h-20 w-20 rounded-full border-4 border-foreground bg-primary hover:bg-primary/90 focus-visible:ring-offset-8 active:scale-95 transition-transform"
+                            onClick={handleCapture}
+                            disabled={isProcessing || hasCameraPermission !== true}
+                            aria-label="Capture Pokémon"
+                        >
+                            <Camera className="h-10 w-10 text-primary-foreground" />
+                        </Button>
+                        <div className="w-8 h-8 bg-primary rounded-full border-2 border-foreground animate-pulse" />
+                    </div>
                 </div>
             </main>
         </div>
