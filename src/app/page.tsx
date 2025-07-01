@@ -27,8 +27,15 @@ const LogoIcon = (props: React.SVGProps<SVGSVGElement>) => (
         {/* Handle */}
         <path fill="hsl(var(--primary))" d="M14 18l2-2 4 4-2 2z" />
         
-        {/* Lens Glare */}
-        <path fill="hsl(var(--background))" d="M8 10h3v2H8z" />
+        {/* Mini Pokeball inside lens */}
+        {/* Top half (red) */}
+        <path fill="hsl(var(--primary))" d="M9 10h6v2H9z" />
+        {/* Bottom half (background color) */}
+        <path fill="hsl(var(--background))" d="M9 13h6v2H9z" />
+        {/* Center line (foreground color) */}
+        <path fill="hsl(var(--foreground))" d="M9 12h6v1H9z" />
+        {/* Center button (background color) */}
+        <path fill="hsl(var(--background))" d="M11 12h2v1h-2z" />
     </svg>
 );
 
