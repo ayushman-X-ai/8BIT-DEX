@@ -44,7 +44,7 @@ export function PokemonFilter({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="border-2 border-foreground">
+        <Button variant="outline" className="border-2 border-foreground text-xs sm:text-sm">
           <Filter className="mr-2 h-4 w-4" />
           Filter
           {selectedTypes.length > 0 && (
