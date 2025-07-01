@@ -55,7 +55,7 @@ export function PokemonFilter({
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-64 border-2 border-foreground bg-popover">
+      <PopoverContent className="w-80 border-2 border-foreground bg-popover">
         <div className="grid gap-4">
           <div className="space-y-2">
             <div className="flex justify-between items-center">
