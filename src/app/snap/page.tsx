@@ -79,10 +79,12 @@ export default function SnapPage() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+    const [isRequestingPermission, setIsRequestingPermission] = useState(false);
     const [isCameraReady, setIsCameraReady] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
 
     const getCameraPermission = useCallback(async () => {
+        setIsRequestingPermission(true);
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             console.error('Camera not supported on this browser.');
             setHasCameraPermission(false);
@@ -91,6 +93,7 @@ export default function SnapPage() {
                 title: 'Camera Not Supported',
                 description: 'Your browser does not support camera access.',
             });
+            setIsRequestingPermission(false);
             return;
         }
 
@@ -113,6 +116,7 @@ export default function SnapPage() {
                     title: 'Camera Access Denied',
                     description: 'Please enable camera permissions in your browser settings.',
                 });
+                setIsRequestingPermission(false);
                 return;
             }
         }
@@ -124,6 +128,7 @@ export default function SnapPage() {
                 videoRef.current.srcObject = stream;
             }
         }
+        setIsRequestingPermission(false);
     }, [toast]);
 
     useEffect(() => {
@@ -135,7 +140,7 @@ export default function SnapPage() {
                 stream.getTracks().forEach(track => track.stop());
             }
         };
-    }, [getCameraPermission]);
+    }, []); // Note: Removed getCameraPermission from deps to run only once on mount.
 
     const handleCapture = async () => {
         if (!videoRef.current || !canvasRef.current || !videoRef.current.srcObject) {
@@ -229,6 +234,7 @@ export default function SnapPage() {
                         playsInline
                         muted
                         onCanPlay={() => setIsCameraReady(true)}
+                        onError={(e) => console.error('Video Error:', e)}
                     />
                     <CameraFrame />
                     <canvas ref={canvasRef} className="hidden" />
@@ -241,8 +247,12 @@ export default function SnapPage() {
                                     Please allow camera access to use this feature. You may need to change permissions in your browser settings.
                                 </AlertDescription>
                             </Alert>
-                             <Button onClick={() => window.location.reload()}>
-                                <RefreshCw className="mr-2 h-4 w-4" />
+                             <Button onClick={getCameraPermission} disabled={isRequestingPermission}>
+                                {isRequestingPermission ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                    <RefreshCw className="mr-2 h-4 w-4" />
+                                )}
                                 Try Again
                             </Button>
                         </div>
