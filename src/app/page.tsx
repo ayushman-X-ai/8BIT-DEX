@@ -21,6 +21,8 @@ const PixelPokeballIcon = (props: React.SVGProps<SVGSVGElement>) => (
         <path fill="hsl(var(--foreground))" d="M9 2h6v1h2v1h1v1h1v2h1v6h-1v2h-1v1h-1v1h-2v1H9v-1H7v-1H6v-1H5v-2H4V8h1V6h1V5h2V4h1V3z" />
         {/* Red Top */}
         <path fill="hsl(var(--primary))" d="M9 4h6v1h1v1h1v3H7V6h1V5h1V4z" />
+        {/* Glint on top */}
+        <path fill="#FFF" opacity="0.7" d="M10 5h2v1h1v1h-1v-1h-2V5z" />
         {/* White Bottom */}
         <path fill="#FFF" d="M7 13h10v1h1v1h-1v1h-1v1H8v-1H7v-1H6v-1h1v-1z" />
         {/* Separator Line */}
