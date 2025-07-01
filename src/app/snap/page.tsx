@@ -132,6 +132,13 @@ export default function SnapPage() {
         context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
         const photoDataUri = canvas.toDataURL('image/jpeg');
 
+        // Stop the camera stream here.
+        if (videoRef.current && videoRef.current.srcObject) {
+            const stream = videoRef.current.srcObject as MediaStream;
+            stream.getTracks().forEach((track) => track.stop());
+            videoRef.current.srcObject = null;
+        }
+
         try {
             const result = await identifyPokemon({ photoDataUri });
             if (result.pokemonName) {
