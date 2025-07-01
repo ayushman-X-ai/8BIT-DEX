@@ -10,28 +10,18 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { PokemonFilter } from '@/components/pokemon-filter';
 
 const LogoIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    stroke="none"
-    {...props}
-  >
-    {/* Body */}
-    <path fill="hsl(var(--primary))" d="M5 3h14v1h1v16h-1v1H5v-1H4V4h1V3z" />
-    {/* Inner body fill */}
-    <path fill="hsl(var(--primary))" d="M5 4h14v16H5z" />
-    {/* Screen Bezel */}
-    <path fill="hsl(var(--foreground))" d="M7 6h10v9H7z" />
-    {/* Screen */}
-    <path fill="hsl(var(--background))" d="M8 7h8v7H8z" />
-    {/* Green light on screen */}
-    <path fill="lime" d="M9 8h1v1H9z" />
-    {/* D-Pad */}
-    <path fill="hsl(var(--foreground))" d="M8 17h3v1H8zm1-1h1v3H9z" />
-    {/* A and B buttons */}
-    <path fill="hsl(var(--foreground))" d="M14 16h2v2h-2zm-2 2h2v2h-2z" />
-  </svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="none" {...props}>
+        {/* Main background block */}
+        <path fill="hsl(var(--primary))" d="M4 4h16v16H4z"/>
+
+        {/* Left side - D-pad */}
+        <path fill="hsl(var(--foreground))" d="M8 11h3v2H8z"/>
+        <path fill="hsl(var(--foreground))" d="M9 10h1v4H9z"/>
+
+        {/* Right side - Screen-like element */}
+        <path fill="hsl(var(--background))" d="M13 8h6v8h-6z"/>
+        <path fill="hsl(var(--accent))" d="M14 9h4v6h-4z"/>
+    </svg>
 );
 
 
