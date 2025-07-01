@@ -1,10 +1,10 @@
 
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactElement } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import { ArrowLeft, Heart, Weight, Ruler } from "lucide-react";
 import type { Pokemon, PokemonSpecies } from "@/types/pokemon";
 import { 
@@ -237,7 +237,10 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
     )
 }
 
-export default function PokemonDetailPage({ params }: { params: { id: string } }) {
+export default function PokemonDetailPage() {
+  const params = useParams();
+  const id = (Array.isArray(params.id) ? params.id[0] : params.id) as string;
+
   const [pokemon, setPokemon] = useState<CombinedPokemonData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -268,9 +271,11 @@ export default function PokemonDetailPage({ params }: { params: { id: string } }
 
         return { ...pokemonData, ...speciesData, evolutionChain };
     }
+    
+    if (!id) return;
 
     setIsLoading(true);
-    getPokemonData(params.id)
+    getPokemonData(id)
         .then(data => {
             setPokemon(data);
         })
@@ -283,7 +288,7 @@ export default function PokemonDetailPage({ params }: { params: { id: string } }
         .finally(() => {
             setIsLoading(false);
         });
-  }, [params.id]);
+  }, [id]);
 
   if (isLoading) {
     return (
@@ -312,5 +317,3 @@ export default function PokemonDetailPage({ params }: { params: { id: string } }
   
   return <PokemonDetailPresentation pokemon={pokemon} />;
 }
-
-    
