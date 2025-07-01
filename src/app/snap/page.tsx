@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Camera, RefreshCw, RadioTower } from 'lucide-react';
+import { ArrowLeft, Camera, RefreshCw, RadioTower, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -30,6 +30,16 @@ const PokedexScanner = () => (
         </p>
     </div>
 );
+
+const CameraInitializing = () => (
+    <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center z-20">
+        <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
+        <p className="font-headline text-lg sm:text-xl text-primary animate-pulse tracking-widest drop-shadow-[2px_2px_0_hsl(var(--foreground)/0.5)]">
+            STARTING CAMERA...
+        </p>
+    </div>
+);
+
 
 // New, more detailed camera frame
 const CameraFrame = () => (
@@ -69,6 +79,7 @@ export default function SnapPage() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+    const [isCameraReady, setIsCameraReady] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
 
     const getCameraPermission = useCallback(async () => {
@@ -210,7 +221,15 @@ export default function SnapPage() {
 
                 <div className="relative w-full max-w-md aspect-[4/3] bg-black border-4 border-foreground overflow-hidden shadow-[inset_0_0_10px_black,0_0_10px_hsl(var(--primary)/0.5)]">
                     {isProcessing && <PokedexScanner />}
-                    <video ref={videoRef} className="w-full h-full object-cover" autoPlay playsInline muted />
+                    {hasCameraPermission && !isCameraReady && !isProcessing && <CameraInitializing />}
+                    <video
+                        ref={videoRef}
+                        className="w-full h-full object-cover"
+                        autoPlay
+                        playsInline
+                        muted
+                        onCanPlay={() => setIsCameraReady(true)}
+                    />
                     <CameraFrame />
                     <canvas ref={canvasRef} className="hidden" />
 
@@ -234,12 +253,16 @@ export default function SnapPage() {
                         <div className="w-8 h-8 bg-primary rounded-full border-2 border-foreground animate-pulse" />
                         <Button
                             size="lg"
-                            className="h-20 w-20 rounded-full border-4 border-foreground bg-primary hover:bg-primary/90 focus-visible:ring-offset-8 active:scale-95 transition-transform"
+                            className="h-20 w-20 rounded-full border-4 border-foreground bg-primary hover:bg-primary/90 focus-visible:ring-offset-8 active:scale-95 transition-transform disabled:bg-muted disabled:cursor-not-allowed"
                             onClick={handleCapture}
-                            disabled={isProcessing || hasCameraPermission !== true}
+                            disabled={isProcessing || !isCameraReady || hasCameraPermission !== true}
                             aria-label="Capture Pokémon"
                         >
-                            <Camera className="h-10 w-10 text-primary-foreground" />
+                            {!isCameraReady && hasCameraPermission ? (
+                                <Loader2 className="h-10 w-10 text-primary-foreground animate-spin" />
+                            ) : (
+                                <Camera className="h-10 w-10 text-primary-foreground" />
+                            )}
                         </Button>
                         <div className="w-8 h-8 bg-primary rounded-full border-2 border-foreground animate-pulse" />
                     </div>
