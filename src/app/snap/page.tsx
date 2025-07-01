@@ -126,16 +126,11 @@ export default function SnapPage() {
         };
     }, [getCameraPermission]);
 
-    const stopCameraStream = () => {
-        if (videoRef.current && videoRef.current.srcObject) {
-            const stream = videoRef.current.srcObject as MediaStream;
-            stream.getTracks().forEach((track) => track.stop());
-            videoRef.current.srcObject = null;
-        }
-    };
-
     const handleCapture = async () => {
-        if (!videoRef.current || !canvasRef.current) return;
+        if (!videoRef.current || !canvasRef.current || !videoRef.current.srcObject) {
+            toast({ variant: "destructive", title: "Camera not available."});
+            return;
+        };
         
         const video = videoRef.current;
         if (video.readyState < video.HAVE_CURRENT_DATA || video.videoWidth === 0) {
@@ -165,9 +160,7 @@ export default function SnapPage() {
         canvas.height = videoHeight * scale;
 
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const photoDataUri = canvas.toDataURL('image/jpeg', 0.9); // Use 90% quality
-
-        stopCameraStream();
+        const photoDataUri = canvas.toDataURL('image/jpeg', 0.9);
 
         try {
             const result = await identifyPokemon({ photoDataUri });
@@ -180,7 +173,6 @@ export default function SnapPage() {
                     description: 'Could not identify a Pokémon. Please try again.',
                 });
                 setIsProcessing(false);
-                getCameraPermission();
             }
         } catch (error) {
             console.error('AI identification error:', error);
@@ -190,7 +182,6 @@ export default function SnapPage() {
                 description: 'An error occurred while trying to identify the Pokémon.',
             });
             setIsProcessing(false);
-            getCameraPermission();
         }
     };
     
