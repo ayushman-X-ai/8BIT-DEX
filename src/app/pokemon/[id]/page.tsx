@@ -196,7 +196,21 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
                                     ))}
                                 </div>
                             )}
-                            {activeTab === 'moves' && (<p className="text-center text-gray-500 py-8">Moves information coming soon!</p>)}
+                            {activeTab === 'moves' && (
+                                <div className="max-h-[250px] overflow-y-auto -mr-4 pr-4">
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-center">
+                                        {pokemon.moves.length > 0 ? (
+                                            pokemon.moves.map(({ move }) => (
+                                                <div key={move.name} className="bg-gray-100 p-2 rounded-lg border-2 border-black font-medium text-sm shadow-[2px_2px_0_#000]">
+                                                    {capitalize(move.name.replace(/-/g, ' '))}
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p className="col-span-full text-center text-gray-500 py-8">No moves available for this Pokémon.</p>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                             {activeTab === 'evolutions' && (
                                 <div className="space-y-4">
                                     {allEvolutions.length > 1 ? (
