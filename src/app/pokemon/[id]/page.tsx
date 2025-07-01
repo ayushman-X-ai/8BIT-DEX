@@ -16,7 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 interface Evolution {
   id: number;
@@ -153,7 +153,7 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
                     
                     <div className="w-full">
                         <div className="flex border-b-2 border-foreground mb-4">
-                            {['About', 'Stats', 'Evolutions'].map(tab => (
+                            {['About', 'Stats', 'Stages'].map(tab => (
                                 <button key={tab} onClick={() => setActiveTab(tab.toLowerCase())} className={cn(
                                     "px-4 py-2 font-bold text-sm uppercase -mb-[2px] text-muted-foreground border-2 border-transparent",
                                     activeTab === tab.toLowerCase() && "bg-card border-foreground border-b-card text-accent"
@@ -204,7 +204,7 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
                                     ))}
                                 </div>
                             )}
-                             {activeTab === 'evolutions' && (
+                             {activeTab === 'stages' && (
                                 <div className="space-y-4">
                                     {allEvolutions.length > 1 ? (
                                         <div className="flex justify-center items-center gap-2 sm:gap-4 flex-wrap">

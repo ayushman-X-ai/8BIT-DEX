@@ -175,7 +175,7 @@ export function PokemonExplainDialog({ pokemon }: PokemonExplainDialogProps) {
 
           {!isLoadingEvolutions && evolutions.length > 0 && (
             <div>
-              <h4 className="font-semibold text-foreground mb-2">Evolutions</h4>
+              <h4 className="font-semibold text-foreground mb-2">Stages</h4>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {evolutions.map(evo => (
                     <div key={evo.id} className="flex flex-col items-center text-center">
