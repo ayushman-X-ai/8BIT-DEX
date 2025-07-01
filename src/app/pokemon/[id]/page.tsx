@@ -12,6 +12,7 @@ import {
   formatPokemonId, 
   getEnglishFlavorText,
   getGenderRatio,
+  getPokemonTypeClasses,
 } from "@/lib/pokemon-utils";
 import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
@@ -20,12 +21,6 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 // --- START: ICONS ---
-const WaterDropIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C5 11.1 4 13 4 15a7 7 0 0 0 7 7z" />
-  </svg>
-);
-
 const GenderIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
       <circle cx="9" cy="15" r="3" />
@@ -118,7 +113,7 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
                 <div className="max-w-2xl mx-auto">
                     <div className="rounded-xl border-2 border-foreground shadow-neo p-2 bg-card">
                         <div className="relative aspect-square rounded-lg overflow-hidden">
-                            <div className="absolute inset-0 bg-[#F87171] top-0 h-1/2"></div>
+                            <div className="absolute inset-0 bg-red-400 top-0 h-1/2"></div>
                             <div className="absolute inset-0 bg-card bottom-0 h-1/2 top-1/2"></div>
                             <div className="absolute top-1/2 left-0 right-0 h-2 -translate-y-1/2 bg-foreground z-10"></div>
                             <div className="absolute top-1/2 left-1/2 w-16 h-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-card border-4 border-foreground z-20"></div>
@@ -139,8 +134,10 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
                     </div>
 
                     <div className="flex justify-center my-4">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 border-foreground shadow-neo-sm bg-blue-300 text-black font-semibold">
-                           <WaterDropIcon className="w-5 h-5"/>
+                        <div className={cn(
+                          "inline-flex items-center justify-center px-4 py-2 rounded-full border-2 border-foreground shadow-neo-sm font-semibold",
+                          getPokemonTypeClasses(pokemon.types[0].type.name)
+                        )}>
                            <span>{capitalize(pokemon.types[0].type.name)}</span>
                         </div>
                     </div>

@@ -53,7 +53,7 @@ export function PokemonCardSkeleton() {
   return (
     <Card className="overflow-hidden rounded-lg shadow-lg">
       <CardContent className="p-0">
-        <div className="bg-gray-200 p-4">
+        <div className="bg-gray-200 dark:bg-gray-700 p-4">
           <Skeleton className="aspect-square w-full rounded-md" />
         </div>
         <div className="p-4 bg-card">
