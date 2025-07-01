@@ -23,11 +23,36 @@ export const getPokemonTypeClasses = (type: string): string => {
   return POKEMON_TYPE_COLORS[type.toLowerCase()] || "bg-gray-300 text-gray-800";
 };
 
+export const getPokemonTypeBgClass = (type: string): string => {
+  const classes = POKEMON_TYPE_COLORS[type.toLowerCase()] || "bg-gray-300";
+  return classes.split(" ")[0];
+};
+
 export const formatPokemonId = (id: number): string => {
-  return `#${id.toString().padStart(3, "0")}`;
+  return `#${id.toString().padStart(4, "0")}`;
 };
 
 export const capitalize = (s: string) => {
   if (!s) return "";
   return s.charAt(0).toUpperCase() + s.slice(1);
-}
+};
+
+
+export const getEnglishFlavorText = (
+  entries: {
+    flavor_text: string;
+    language: { name: string };
+  }[]
+): string => {
+  const entry = entries.findLast((e) => e.language.name === "en");
+  return entry ? entry.flavor_text.replace(/[\n\f]/g, " ") : "No description available.";
+};
+
+export const getGenderRatio = (rate: number): { male: number; female: number } | null => {
+  if (rate === -1) {
+    return null; // Genderless
+  }
+  const femalePercentage = (rate / 8) * 100;
+  const malePercentage = 100 - femalePercentage;
+  return { male: malePercentage, female: femalePercentage };
+};
