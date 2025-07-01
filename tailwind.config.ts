@@ -9,6 +9,10 @@ export default {
   ],
   theme: {
     extend: {
+      boxShadow: {
+        'neo': '4px 4px 0 hsl(var(--foreground))',
+        'neo-sm': '2px 2px 0 hsl(var(--foreground))',
+      },
       fontFamily: {
         body: ['Inter', 'sans-serif'],
         headline: ['Inter', 'sans-serif'],

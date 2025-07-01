@@ -4,6 +4,7 @@ import React from 'react';
 import { Search } from 'lucide-react';
 import { PokemonGrid } from '@/components/pokemon-grid';
 import { Input } from '@/components/ui/input';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 const PokeballIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
@@ -33,11 +34,14 @@ export default function Home() {
   return (
     <div className="bg-background min-h-screen">
       <header className="py-6 px-4 md:px-8 border-b sticky top-0 z-10 bg-background/80 backdrop-blur-sm">
-        <div className="container mx-auto flex items-center gap-4">
-          <PokeballIcon className="text-accent h-8 w-8" />
-          <h1 className="text-3xl font-bold font-headline text-foreground">
-            Kanto Dex
-          </h1>
+        <div className="container mx-auto flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <PokeballIcon className="text-accent h-8 w-8" />
+            <h1 className="text-3xl font-bold font-headline text-foreground">
+              Kanto Dex
+            </h1>
+          </div>
+          <ThemeToggle />
         </div>
       </header>
       <main className="container mx-auto py-8 px-4 md:px-8">

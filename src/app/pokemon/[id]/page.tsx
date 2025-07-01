@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 // --- START: ICONS ---
 const WaterDropIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -92,31 +93,36 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
     return (
         <div className="bg-background bg-[radial-gradient(hsl(var(--border))_1px,transparent_1px)] bg-[size:16px_16px] min-h-screen font-body">
             <header className="py-4 px-4 md:px-8 border-b sticky top-0 z-10 bg-background/80 backdrop-blur-sm">
-                <div className="container mx-auto flex items-center justify-between">
-                    <Link href="/" aria-label="Back to Pokédex">
-                        <Button variant="ghost" size="icon">
-                            <ArrowLeft className="h-6 w-6" />
-                        </Button>
-                    </Link>
-                    <div className="flex flex-col items-center">
+                <div className="container mx-auto grid grid-cols-3 items-center">
+                    <div className="justify-self-start">
+                        <Link href="/" aria-label="Back to Pokédex">
+                            <Button variant="ghost" size="icon">
+                                <ArrowLeft className="h-6 w-6" />
+                            </Button>
+                        </Link>
+                    </div>
+                    <div className="flex flex-col items-center justify-self-center">
                         <h1 className="text-3xl font-bold font-headline">{capitalize(pokemon.name)}</h1>
                         <p className="text-muted-foreground font-mono">{formatPokemonId(pokemon.id)}</p>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={() => setIsFavorite(p => !p)} aria-label="Toggle Favorite">
-                        <Heart className={cn("h-6 w-6", isFavorite ? "text-red-500 fill-current" : "text-foreground/50")} />
-                    </Button>
+                    <div className="flex items-center gap-2 justify-self-end">
+                        <Button variant="ghost" size="icon" onClick={() => setIsFavorite(p => !p)} aria-label="Toggle Favorite">
+                            <Heart className={cn("h-6 w-6", isFavorite ? "text-red-500 fill-current" : "text-foreground/50")} />
+                        </Button>
+                        <ThemeToggle />
+                    </div>
                 </div>
             </header>
 
             <main className="container mx-auto py-8 px-4 md:px-8">
                 <div className="max-w-2xl mx-auto">
-                    <div className="rounded-xl border-2 border-black shadow-[4px_4px_0_#000] p-2 bg-white">
+                    <div className="rounded-xl border-2 border-foreground shadow-neo p-2 bg-card">
                         <div className="relative aspect-square rounded-lg overflow-hidden">
                             <div className="absolute inset-0 bg-[#F87171] top-0 h-1/2"></div>
-                            <div className="absolute inset-0 bg-white bottom-0 h-1/2 top-1/2"></div>
-                            <div className="absolute top-1/2 left-0 right-0 h-2 -translate-y-1/2 bg-black z-10"></div>
-                            <div className="absolute top-1/2 left-1/2 w-16 h-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white border-4 border-black z-20"></div>
-                            <div className="absolute top-1/2 left-1/2 w-8 h-8 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gray-200 border-2 border-black z-30"></div>
+                            <div className="absolute inset-0 bg-card bottom-0 h-1/2 top-1/2"></div>
+                            <div className="absolute top-1/2 left-0 right-0 h-2 -translate-y-1/2 bg-foreground z-10"></div>
+                            <div className="absolute top-1/2 left-1/2 w-16 h-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-card border-4 border-foreground z-20"></div>
+                            <div className="absolute top-1/2 left-1/2 w-8 h-8 -translate-x-1/2 -translate-y-1/2 rounded-full bg-muted border-2 border-foreground z-30"></div>
 
                             <div className="relative w-full h-full p-4 z-40">
                                 <Image
@@ -133,7 +139,7 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
                     </div>
 
                     <div className="flex justify-center my-4">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 border-black shadow-[2px_2px_0_#000] bg-blue-300 text-black font-semibold">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 border-foreground shadow-neo-sm bg-blue-300 text-black font-semibold">
                            <WaterDropIcon className="w-5 h-5"/>
                            <span>{capitalize(pokemon.types[0].type.name)}</span>
                         </div>
@@ -141,29 +147,29 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
                     
                     {/* Tabs */}
                     <div className="w-full">
-                        <div className="flex border-b-2 border-black mb-4">
+                        <div className="flex border-b-2 border-foreground mb-4">
                             {['about', 'stats', 'moves', 'evolutions'].map(tab => (
                                 <button key={tab} onClick={() => setActiveTab(tab)} className={cn(
-                                    "px-4 py-2 font-bold -mb-[2px] text-gray-500",
-                                    activeTab === tab && "bg-lime-300 border-2 border-black rounded-t-lg text-black shadow-[0px_-2px_0_#000,2px_-2px_0_#000,-2px_-2px_0_#000]"
+                                    "px-4 py-2 font-bold -mb-[2px] text-muted-foreground",
+                                    activeTab === tab && "bg-lime-300 border-2 border-foreground rounded-t-lg text-black border-b-card"
                                 )}>
                                     {capitalize(tab)}
                                 </button>
                             ))}
                         </div>
 
-                        <div className="bg-white rounded-xl border-2 border-black shadow-[4px_4px_0_#000] p-4 min-h-[200px]">
+                        <div className="bg-card rounded-xl border-2 border-foreground shadow-neo p-4 min-h-[200px]">
                             {activeTab === 'about' && (
                                 <div className="space-y-4">
-                                    <p className="text-gray-700 leading-relaxed">{flavorText}</p>
+                                    <p className="text-card-foreground/80 leading-relaxed">{flavorText}</p>
                                     
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="bg-lime-300 p-3 rounded-full border-2 border-black shadow-[2px_2px_0_#000] flex items-center justify-center gap-2">
+                                        <div className="bg-lime-300 p-3 rounded-full border-2 border-foreground shadow-neo-sm flex items-center justify-center gap-2 text-black">
                                             <Weight className="w-5 h-5"/>
                                             <span className="font-bold">{(pokemon.weight / 10).toFixed(1)}</span>
                                             <span className="text-sm">kg</span>
                                         </div>
-                                        <div className="bg-lime-300 p-3 rounded-full border-2 border-black shadow-[2px_2px_0_#000] flex items-center justify-center gap-2">
+                                        <div className="bg-lime-300 p-3 rounded-full border-2 border-foreground shadow-neo-sm flex items-center justify-center gap-2 text-black">
                                             <Ruler className="w-5 h-5"/>
                                             <span className="font-bold">{(pokemon.height / 10).toFixed(1)}</span>
                                             <span className="text-sm">m</span>
@@ -176,7 +182,7 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
                                             <span>Gender Ratio</span>
                                         </div>
                                         {gender ? (
-                                            <div className="relative w-full h-8 rounded-full border-2 border-black shadow-[2px_2px_0_#000] overflow-hidden flex">
+                                            <div className="relative w-full h-8 rounded-full border-2 border-foreground shadow-neo-sm overflow-hidden flex">
                                                 <div className="absolute inset-0 flex items-center px-4 z-10">
                                                     <span className="font-bold text-white text-shadow">{gender.male}% Male</span>
                                                 </div>
@@ -193,11 +199,11 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
                                 <div className="space-y-3">
                                     {pokemon.stats.map(stat => (
                                       <div key={stat.stat.name} className="grid grid-cols-3 items-center gap-2">
-                                        <p className="font-medium text-gray-600 capitalize col-span-1">{stat.stat.name.replace('-', ' ')}</p>
+                                        <p className="font-medium text-muted-foreground capitalize col-span-1">{stat.stat.name.replace('-', ' ')}</p>
                                         <div className="col-span-2">
-                                            <div className="relative h-6 w-full bg-gray-200 rounded-full border-2 border-black">
+                                            <div className="relative h-6 w-full bg-muted rounded-full border-2 border-foreground">
                                                 <div className="absolute h-full bg-yellow-400 rounded-full" style={{width: `${(stat.base_stat/255)*100}%`}}></div>
-                                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold">{stat.base_stat}</span>
+                                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-black">{stat.base_stat}</span>
                                             </div>
                                         </div>
                                       </div>
@@ -209,12 +215,12 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-center">
                                         {pokemon.moves.length > 0 ? (
                                             pokemon.moves.map(({ move }) => (
-                                                <div key={move.name} className="bg-gray-100 p-2 rounded-lg border-2 border-black font-medium text-sm shadow-[2px_2px_0_#000]">
+                                                <div key={move.name} className="bg-muted p-2 rounded-lg border-2 border-foreground font-medium text-sm shadow-neo-sm text-card-foreground">
                                                     {capitalize(move.name.replace(/-/g, ' '))}
                                                 </div>
                                             ))
                                         ) : (
-                                            <p className="col-span-full text-center text-gray-500 py-8">No moves available for this Pokémon.</p>
+                                            <p className="col-span-full text-center text-muted-foreground py-8">No moves available for this Pokémon.</p>
                                         )}
                                     </div>
                                 </div>
@@ -226,7 +232,7 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
                                             {allEvolutions.map((evo, index) => (
                                                 <React.Fragment key={evo.id}>
                                                     <div className="flex flex-col items-center gap-1">
-                                                        <div className="bg-gray-100 rounded-lg border-2 border-black p-2 w-24 h-24">
+                                                        <div className="bg-muted rounded-lg border-2 border-foreground p-2 w-24 h-24">
                                                             <div className="relative w-full h-full">
                                                                 <Image
                                                                     src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${evo.id}.png`}
@@ -247,7 +253,7 @@ function PokemonDetailPresentation({ pokemon }: { pokemon: CombinedPokemonData }
                                             ))}
                                         </div>
                                     ) : (
-                                       <p className="text-center text-gray-500 py-8">This Pokémon does not evolve.</p>
+                                       <p className="text-center text-muted-foreground py-8">This Pokémon does not evolve.</p>
                                     )}
                                 </div>
                             )}
