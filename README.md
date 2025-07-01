@@ -17,5 +17,3 @@ Follow these steps:
 3.  **Deploy:** Vercel will automatically detect that you are using Next.js and configure the build settings. You can add environment variables if needed. Click "Deploy".
 
 Your app will be live in a few moments!
-
-**Note:** This project contains an `apphosting.yaml` file which is used for Firebase App Hosting. You can safely ignore or delete this file when deploying to Vercel.
