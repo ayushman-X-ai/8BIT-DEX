@@ -9,6 +9,7 @@
 
 import { z } from 'genkit';
 import { googleAI } from '@genkit-ai/googleai';
+import { genkit } from 'genkit';
 import { ai as defaultAi } from '@/ai/genkit';
 
 const IdentifyPokemonInputSchema = z.object({
@@ -38,14 +39,16 @@ If the image does not contain a Pokémon, or if you cannot confidently identify 
 
 Photo: {{media url=photoDataUri}}`;
 
-// Mobile-specific model instance using the dedicated scanner key.
+// Create a separate Genkit instance for mobile scanning to use the dedicated API key.
 // We use gemini-2.0-flash as it is suitable for vision tasks.
-const mobileScannerModel = googleAI({ apiKey: process.env.SCANNER_API_KEY }).model('gemini-2.0-flash');
+const mobileAi = genkit({
+  plugins: [googleAI({ apiKey: process.env.SCANNER_API_KEY })],
+});
 
-// Prompt for mobile devices, using the scanner-specific model
-const mobilePrompt = defaultAi.definePrompt({
+// Prompt for mobile devices, using the scanner-specific AI instance and model
+const mobilePrompt = mobileAi.definePrompt({
   name: 'identifyPokemonPromptMobile',
-  model: mobileScannerModel,
+  model: 'googleai/gemini-2.0-flash',
   input: {schema: IdentifyPokemonInputSchema},
   output: {schema: IdentifyPokemonOutputSchema},
   prompt: PROMPT_TEXT,
