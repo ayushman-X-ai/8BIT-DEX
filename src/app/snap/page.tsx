@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, RadioTower, Loader2, Camera, VideoOff } from 'lucide-react';
+import Webcam from 'react-webcam';
+import Resizer from 'react-image-file-resizer';
 
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -25,35 +27,36 @@ const PokedexScanner = () => (
     </div>
 );
 
-const resizeImage = (dataUri: string, maxWidth: number, maxHeight: number, quality: number): Promise<string> => {
+const dataURItoBlob = (dataURI: string): Blob => {
+    const byteString = atob(dataURI.split(',')[1]);
+    const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+    }
+    return new Blob([ab], { type: mimeString });
+};
+
+const resizeImage = (dataUri: string): Promise<string> => {
     return new Promise((resolve, reject) => {
-        const img = new window.Image();
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            let { width, height } = img;
-
-            if (width > height) {
-                if (width > maxWidth) {
-                    height = Math.round((height * maxWidth) / width);
-                    width = maxWidth;
-                }
-            } else {
-                if (height > maxHeight) {
-                    width = Math.round((width * maxHeight) / height);
-                    height = maxHeight;
-                }
-            }
-
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) return reject(new Error('Could not get canvas context'));
-            
-            ctx.drawImage(img, 0, 0, width, height);
-            resolve(canvas.toDataURL('image/jpeg', quality));
-        };
-        img.onerror = reject;
-        img.src = dataUri;
+        try {
+            const blob = dataURItoBlob(dataUri);
+            Resizer.imageFileResizer(
+                blob,
+                512,
+                512,
+                'JPEG',
+                70,
+                0,
+                (uri) => {
+                    resolve(uri as string);
+                },
+                'base64'
+            );
+        } catch (error) {
+            reject(error);
+        }
     });
 };
 
@@ -61,67 +64,29 @@ const resizeImage = (dataUri: string, maxWidth: number, maxHeight: number, quali
 export default function SnapPage() {
     const router = useRouter();
     const { toast } = useToast();
-    const videoRef = useRef<HTMLVideoElement>(null);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const webcamRef = useRef<Webcam>(null);
 
     const [isProcessing, setIsProcessing] = useState(false);
     const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
 
-    useEffect(() => {
-        const getCameraPermission = async () => {
-          try {
-            const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: 'environment' } 
-            });
-            setHasCameraPermission(true);
-    
-            if (videoRef.current) {
-              videoRef.current.srcObject = stream;
-            }
-          } catch (error) {
-            console.error('Error accessing camera:', error);
-            setHasCameraPermission(false);
-            toast({
-              variant: 'destructive',
-              title: 'Camera Access Denied',
-              description: 'Please enable camera permissions in your browser settings.',
-            });
-          }
-        };
-    
-        getCameraPermission();
-    }, [toast]);
-
     const handleIdentify = useCallback(async () => {
-        if (!videoRef.current) return;
+        if (!webcamRef.current) return;
         
         setIsProcessing(true);
         
-        const canvas = canvasRef.current || document.createElement('canvas');
-        if (!canvasRef.current) {
-            canvasRef.current = canvas;
-        }
-
-        const video = videoRef.current;
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
+        const imageSrc = webcamRef.current.getScreenshot();
+        if (!imageSrc) {
             toast({
                 variant: 'destructive',
-                title: 'Canvas Error',
-                description: 'Could not process the video frame.',
+                title: 'Capture Error',
+                description: 'Could not get an image from the camera.',
             });
             setIsProcessing(false);
             return;
         }
 
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageDataUri = canvas.toDataURL('image/jpeg', 0.9);
-
         try {
-            const resizedDataUri = await resizeImage(imageDataUri, 512, 512, 0.7);
+            const resizedDataUri = await resizeImage(imageSrc);
             const result = await identifyPokemon({ photoDataUri: resizedDataUri });
             if (result.pokemonName) {
                 router.push(`/pokemon/${result.pokemonName.toLowerCase()}`);
@@ -173,7 +138,25 @@ export default function SnapPage() {
                 
                 <div className="relative w-full max-w-md aspect-[4/3] bg-black border-4 border-foreground overflow-hidden shadow-[inset_0_0_10px_black,0_0_10px_hsl(var(--primary)/0.5)] flex items-center justify-center">
                     {isProcessing && <PokedexScanner />}
-                    <video ref={videoRef} className="w-full h-full object-cover" autoPlay playsInline muted />
+                    <Webcam
+                        ref={webcamRef}
+                        audio={false}
+                        screenshotFormat="image/jpeg"
+                        videoConstraints={{ facingMode: "environment" }}
+                        className="w-full h-full object-cover"
+                        onUserMedia={() => {
+                            setHasCameraPermission(true);
+                        }}
+                        onUserMediaError={(error) => {
+                            console.error('Error accessing camera:', error);
+                            setHasCameraPermission(false);
+                            toast({
+                                variant: 'destructive',
+                                title: 'Camera Access Denied',
+                                description: 'Please enable camera permissions in your browser settings.',
+                            });
+                        }}
+                    />
                     {hasCameraPermission === false && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 text-center p-4">
                             <VideoOff className="w-12 h-12 text-destructive mb-4"/>
