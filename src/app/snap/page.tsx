@@ -210,17 +210,17 @@ export default function SnapPage() {
               <div className="container mx-auto grid grid-cols-3 items-center gap-4">
                   <div className="flex justify-start">
                     <Link href="/" aria-label="Back to 8BitDex">
-                        <Button variant="outline" size="xs" className="border-2 border-foreground bg-background text-foreground hover:bg-accent hover:text-accent-foreground">
+                        <Button variant="outline" size="xs" className="border-2 border-gray-400 bg-gray-900 text-gray-50 hover:bg-gray-700 hover:text-white">
                             <ArrowLeft />
                             Back
                         </Button>
                     </Link>
                   </div>
-                  <h1 className="text-xs sm:text-base font-bold font-headline text-gray-50 uppercase tracking-tighter sm:tracking-widest text-center">
+                  <h1 className="text-xs sm:text-base font-bold font-headline text-white uppercase tracking-tighter sm:tracking-widest text-center">
                       8BIT-SCANNER
                   </h1>
                   <div className="flex justify-end">
-                    <RadioTower className="text-gray-400" />
+                    <RadioTower className="text-white" />
                   </div>
               </div>
             </header>
@@ -293,7 +293,7 @@ export default function SnapPage() {
                     </div>
                 </div>
             </main>
-            <footer className="text-center py-4 text-xs text-muted-foreground font-code bg-black">
+            <footer className="text-center py-4 text-xs text-gray-400 font-code bg-black">
                 Made By Ayushman
             </footer>
         </div>
