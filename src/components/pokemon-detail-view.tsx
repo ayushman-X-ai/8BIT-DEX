@@ -15,7 +15,6 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { textToSpeech } from "@/ai/flows/text-to-speech-flow";
 import { useToast } from "@/hooks/use-toast";
 
 interface Evolution {
@@ -82,9 +81,8 @@ const StatBar = ({ value, max }: { value: number; max: number }) => {
 export default function PokemonDetailView({ pokemon }: { pokemon: CombinedPokemonData }) {
     const [activeTab, setActiveTab] = useState('about');
     const [isFavorite, setIsFavorite] = useState(false);
-    const [isTtsLoading, setIsTtsLoading] = useState(false);
     const cryAudioRef = useRef<HTMLAudioElement>(null);
-    const ttsAudioRef = useRef<HTMLAudioElement>(null);
+    const descriptionAudioRef = useRef<HTMLAudioElement>(null);
     const { toast } = useToast();
 
     const cryAudioUrl = `https://pokemoncries.com/cries/${pokemon.id}.mp3`;
@@ -96,26 +94,17 @@ export default function PokemonDetailView({ pokemon }: { pokemon: CombinedPokemo
     const primaryType = pokemon.types[0].type.name;
     const typeClasses = getPokemonTypeClasses(primaryType);
 
-    const handleReadDescription = async () => {
-        if (!flavorText) return;
-        setIsTtsLoading(true);
-        try {
-            const result = await textToSpeech(flavorText);
-            if (result.media && ttsAudioRef.current) {
-                ttsAudioRef.current.src = result.media;
-                ttsAudioRef.current.play();
-            }
-        } catch (error) {
-            console.error("TTS generation failed:", error);
-            toast({
-                variant: "destructive",
-                title: "Could not generate audio",
-                description: "Please try again later.",
+    React.useEffect(() => {
+        const audioData = sessionStorage.getItem('ttsAudioData');
+        if (audioData && descriptionAudioRef.current) {
+            const audio = descriptionAudioRef.current;
+            audio.src = audioData;
+            audio.play().catch(error => {
+                console.error("Automatic audio playback failed.", error);
             });
-        } finally {
-            setIsTtsLoading(false);
+            sessionStorage.removeItem('ttsAudioData');
         }
-    };
+    }, []);
 
     const StatPill = ({ icon, label, value, unit }: {icon: ReactElement, label: string, value: string | number, unit?: string}) => (
         <div className="flex-1 p-2 border-2 border-foreground bg-card flex flex-col items-center justify-center gap-1 text-center min-w-[100px]">
@@ -176,16 +165,6 @@ export default function PokemonDetailView({ pokemon }: { pokemon: CombinedPokemo
                         <div className="flex-grow text-center md:text-left">
                             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-headline uppercase tracking-wide text-foreground">{capitalize(pokemon.name)}</h1>
                             <p className="mt-2 text-muted-foreground leading-relaxed max-w-prose mx-auto md:mx-0 text-xs">{flavorText}</p>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className="mt-4"
-                                onClick={handleReadDescription}
-                                disabled={isTtsLoading}
-                            >
-                                <Volume2 className="mr-2 h-4 w-4 animate-pulse" />
-                                {isTtsLoading ? 'Generating Sound...' : 'Read Aloud'}
-                            </Button>
                             <div className="flex justify-center md:justify-start gap-2 mt-4">
                                 {pokemon.types.map(({ type }) => (
                                     <div key={type.name} className={cn("px-3 py-1 border-2 border-foreground font-bold text-xs uppercase", getPokemonTypeClasses(type.name))}>
@@ -340,7 +319,7 @@ export default function PokemonDetailView({ pokemon }: { pokemon: CombinedPokemo
                 </div>
             </main>
             <audio ref={cryAudioRef} src={cryAudioUrl} preload="auto" className="hidden" />
-            <audio ref={ttsAudioRef} className="hidden" />
+            <audio ref={descriptionAudioRef} className="hidden" />
             <footer className="text-center py-4 text-xs text-muted-foreground font-code">
                 Made By Ayushman
             </footer>
