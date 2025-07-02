@@ -1,7 +1,7 @@
 {
   "name": "8BIT-DEX",
-  "short_name": "PokéDex",
-  "description": "A modern Pokédex to browse and learn about the first 151 Pokémon.",
+  "short_name": "8Bit-Dex",
+  "description": "A modern Pokédex to browse and learn about Pokémon.",
   "icons": [
     {
       "src": "https://placehold.co/192x192.png",
