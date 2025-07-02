@@ -172,14 +172,14 @@ export default function SnapPage() {
         }
 
         // Resize the image to a max dimension to avoid overly large uploads
-        const MAX_DIMENSION = 720;
+        const MAX_DIMENSION = 640;
         const { videoWidth, videoHeight } = video;
         const scale = Math.min(MAX_DIMENSION / videoWidth, MAX_DIMENSION / videoHeight, 1);
         canvas.width = videoWidth * scale;
         canvas.height = videoHeight * scale;
 
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const photoDataUri = canvas.toDataURL('image/jpeg', 0.9);
+        const photoDataUri = canvas.toDataURL('image/jpeg', 0.85);
 
         try {
             const result = await identifyPokemon({ photoDataUri });
@@ -206,21 +206,21 @@ export default function SnapPage() {
     
     return (
         <div className="bg-foreground min-h-screen font-body flex flex-col">
-            <header className="relative py-4 px-4 md:px-8 border-b-4 border-foreground/50 sticky top-0 z-10 bg-foreground flex items-center justify-center">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                    <Link href="/" aria-label="Back to 8BitDex">
-                        <Button variant="outline" size="xs" className="border-2 border-foreground bg-background text-foreground hover:bg-accent hover:text-accent-foreground">
-                            <ArrowLeft />
-                            Back
-                        </Button>
-                    </Link>
-                </div>
-                <h1 className="text-lg sm:text-xl font-bold font-headline text-background uppercase tracking-wider text-center">
-                    8BIT-SCANNER
-                 </h1>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                  <RadioTower className="text-background/50" />
-                </div>
+            <header className="py-4 px-4 md:px-8 border-b-4 border-foreground/50 sticky top-0 z-10 bg-foreground">
+              <div className="container mx-auto grid grid-cols-[auto_1fr_auto] items-center gap-4">
+                  <Link href="/" aria-label="Back to 8BitDex">
+                      <Button variant="outline" size="xs" className="border-2 border-foreground bg-background text-foreground hover:bg-accent hover:text-accent-foreground">
+                          <ArrowLeft />
+                          Back
+                      </Button>
+                  </Link>
+                  <h1 className="text-base sm:text-lg font-bold font-headline text-background uppercase tracking-wider text-center">
+                      8BIT-SCANNER
+                  </h1>
+                  <div className="flex justify-end">
+                    <RadioTower className="text-background/50" />
+                  </div>
+              </div>
             </header>
 
             <main className="flex-grow flex flex-col items-center justify-center p-4 bg-black">
