@@ -60,9 +60,10 @@ const textToSpeechFlow = ai.defineFlow(
         responseModalities: ['AUDIO'],
         speechConfig: {
           voiceConfig: {
-            // Using 'Algenib' as it is one of the available prebuilt voices
-            // that may have a more neutral/robotic tone.
+            // Using a neutral voice and adjusting pitch/rate for a robotic tone.
             prebuiltVoiceConfig: { voiceName: 'Algenib' },
+            pitch: -4.0, // Range: -20.0 to 20.0
+            speakingRate: 0.9, // Range: 0.25 to 4.0
           },
         },
       },
