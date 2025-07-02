@@ -77,7 +77,7 @@ export default function SnapPage() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [imageSrc, setImageSrc] = useState<string | null>(null);
     const [model, setModel] = useState<tmImage.CustomMobileNet | null>(null);
-    const [isModelLoading, setIsModelLoading] = useState(false);
+    const [isModelLoading, setIsModelLoading] = useState(true);
 
     const videoConstraints = {
         width: 1280,
@@ -86,6 +86,7 @@ export default function SnapPage() {
     };
 
     useEffect(() => {
+        // We only load the model on mobile devices.
         if (isMobile) {
             const loadModel = async () => {
                 setIsModelLoading(true);
@@ -98,14 +99,18 @@ export default function SnapPage() {
                     console.error("Failed to load the model:", error);
                     toast({
                         variant: 'destructive',
-                        title: 'Model Failed to Load',
-                        description: 'Could not load the on-device Pokémon classifier.',
+                        title: 'On-Device Model Not Found',
+                        description: 'Please replace the placeholder files in public/model/ with your own trained model from Teachable Machine.',
+                        duration: 10000,
                     });
                 } finally {
                     setIsModelLoading(false);
                 }
             };
             loadModel();
+        } else {
+            // On desktop, we don't need to load the on-device model.
+            setIsModelLoading(false);
         }
     }, [isMobile, toast]);
 
@@ -150,7 +155,7 @@ export default function SnapPage() {
 
         if (isMobile) {
             if (!model) {
-                handleFailure('The on-device scanner is not ready. Please wait.');
+                handleFailure('The on-device scanner is not ready. Please try again.');
                 return;
             }
             try {
@@ -190,8 +195,9 @@ export default function SnapPage() {
     }, [isProcessing, router, toast, webcamRef, isMobile, model]);
     
     const getSystemStatus = () => {
-        if (isMobile && isModelLoading) return 'LOADING MODEL...';
+        if (isModelLoading) return 'LOADING MODEL...';
         if (isProcessing) return 'PROCESSING';
+        if (isMobile && !model) return 'MODEL FAILED';
         return 'READY';
     };
 
@@ -251,7 +257,7 @@ export default function SnapPage() {
                         <div className="w-8 h-8 bg-yellow-400 rounded-full border-2 border-foreground animate-pulse" />
                         <button
                             onClick={captureAndIdentify}
-                            disabled={isProcessing || (isMobile && isModelLoading)}
+                            disabled={isProcessing || isModelLoading || (isMobile && !model)}
                             aria-label="Capture and Identify Pokémon"
                             className="relative group h-20 w-20 rounded-full border-4 border-foreground bg-card overflow-hidden shadow-lg transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-black disabled:opacity-50 disabled:cursor-wait"
                         >
