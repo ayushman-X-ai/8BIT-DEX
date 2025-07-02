@@ -82,7 +82,7 @@ export default function PokemonDetailView({ pokemon }: { pokemon: CombinedPokemo
     const [isFavorite, setIsFavorite] = useState(false);
     const audioRef = useRef<HTMLAudioElement>(null);
 
-    const audioUrl = `https://play.pokemonshowdown.com/audio/cries/${pokemon.name.toLowerCase()}.mp3`;
+    const audioUrl = `https://pokemoncries.com/cries/${pokemon.id}.mp3`;
 
     const flavorText = getEnglishFlavorText(pokemon.flavor_text_entries);
     const gender = getGenderRatio(pokemon.gender_rate);
