@@ -209,8 +209,20 @@ export default function PokemonDetailView({ pokemon }: { pokemon: CombinedPokemo
                                         <div className="flex justify-center items-center gap-2 sm:gap-4 flex-wrap">
                                             {allEvolutions.map((evo, index) => (
                                                 <React.Fragment key={evo.id}>
-                                                    <div className="flex flex-col items-center gap-1 text-center">
-                                                        <div className="bg-muted border-2 border-foreground p-2 w-24 h-24">
+                                                    <Link
+                                                        href={`/pokemon/${evo.id}`}
+                                                        className={cn(
+                                                            "flex flex-col items-center gap-1 text-center group outline-none rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                                                            pokemon.id === evo.id && "cursor-default pointer-events-none"
+                                                        )}
+                                                        aria-disabled={pokemon.id === evo.id}
+                                                        tabIndex={pokemon.id === evo.id ? -1 : undefined}
+                                                    >
+                                                        <div className={cn(
+                                                            "bg-muted border-2 border-foreground p-2 w-24 h-24 transition-colors",
+                                                            pokemon.id !== evo.id && "group-hover:border-accent",
+                                                            pokemon.id === evo.id && "border-primary"
+                                                        )}>
                                                             <div className="relative w-full h-full">
                                                                 <Image
                                                                     src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${evo.id}.png`}
@@ -222,9 +234,14 @@ export default function PokemonDetailView({ pokemon }: { pokemon: CombinedPokemo
                                                                 />
                                                             </div>
                                                         </div>
-                                                        <p className="font-semibold text-xs uppercase mt-2">{evo.name}</p>
+                                                        <p className={cn(
+                                                            "font-semibold text-xs uppercase mt-2 transition-colors",
+                                                            pokemon.id !== evo.id && "group-hover:text-accent"
+                                                        )}>
+                                                            {evo.name}
+                                                        </p>
                                                         <p className="text-xs text-muted-foreground">{formatPokemonId(evo.id)}</p>
-                                                    </div>
+                                                    </Link>
                                                     {index < allEvolutions.length - 1 && (
                                                         <ArrowLeft className="w-8 h-8 rotate-180 text-gray-400 hidden sm:block" />
                                                     )}
