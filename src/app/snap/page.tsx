@@ -4,7 +4,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Resizer from 'react-image-file-resizer';
-import { ArrowLeft, RadioTower, Loader2, Camera, RefreshCw, Send } from 'lucide-react';
+import { ArrowLeft, RadioTower, Loader2, Camera, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { identifyPokemon } from '@/ai/flows/identify-pokemon-flow';
@@ -26,6 +26,20 @@ const PokedexScanner = () => (
         </p>
     </div>
 );
+
+// Function to convert base64 to Blob
+const dataURIToBlob = (dataURI: string): Blob => {
+    const splitDataURI = dataURI.split(',');
+    const byteString = splitDataURI[0].indexOf('base64') >= 0 ? atob(splitDataURI[1]) : decodeURI(splitDataURI[1]);
+    const mimeString = splitDataURI[0].split(':')[1].split(';')[0];
+
+    const ia = new Uint8Array(byteString.length);
+    for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+    }
+    return new Blob([ia], { type: mimeString });
+};
+
 
 // Resizes an image file (Blob) and returns a new base64 Data URI
 const resizeImageFile = (file: Blob): Promise<string> => {
@@ -71,17 +85,13 @@ export default function SnapPage() {
         }
     }, [webcamRef]);
 
-    const handleRetake = () => {
-        setImageSrc(null);
-    };
-
     const handleIdentify = async () => {
-        if (!imageSrc) return;
+        if (!imageSrc || isProcessing) return;
         
         setIsProcessing(true);
         
         try {
-            const imageBlob = await fetch(imageSrc).then(res => res.blob());
+            const imageBlob = dataURIToBlob(imageSrc);
             const resizedDataUri = await resizeImageFile(imageBlob);
             const result = await identifyPokemon({ photoDataUri: resizedDataUri });
 
@@ -94,6 +104,7 @@ export default function SnapPage() {
                     description: 'Could not identify a Pokémon. Please try again.',
                 });
                 setIsProcessing(false);
+                setImageSrc(null); // Reset view to camera on failure
             }
         } catch (error) {
             console.error('AI identification error:', error);
@@ -103,6 +114,7 @@ export default function SnapPage() {
                 description: 'An error occurred while trying to identify the Pokémon.',
             });
             setIsProcessing(false);
+            setImageSrc(null); // Reset view to camera on error
         }
     };
     
@@ -112,7 +124,7 @@ export default function SnapPage() {
               <div className="container mx-auto grid grid-cols-3 items-center gap-4">
                   <div className="flex justify-start">
                     <Link href="/" aria-label="Back to 8BitDex">
-                        <Button variant="outline" size="xs" className="border-2 border-gray-400 bg-gray-900 text-gray-50 hover:bg-gray-700 hover:text-white">
+                        <Button variant="outline" size="xs" className="border-2 border-gray-400 bg-black text-white hover:bg-gray-800 hover:border-gray-500">
                             <ArrowLeft />
                             Back
                         </Button>
@@ -130,14 +142,27 @@ export default function SnapPage() {
             <main className="flex-grow flex flex-col items-center justify-center p-4">
                 <div className="w-full max-w-md space-y-2 text-center mb-4">
                     <p className="font-code text-xs text-green-400 uppercase">SYSTEM STATUS: <span className="text-white">READY</span></p>
-                    <p className="font-code text-xs text-green-400 uppercase">TARGETING: <span className="text-white">POKEMON</span></p>
+                    <p className="font-code text-xs text-green-400 uppercase">TARGETING: <span className="text-white">{imageSrc ? 'CAPTURED' : 'LIVE'}</span></p>
                 </div>
                 
                 <div className="relative w-full max-w-md aspect-[4/3] bg-black border-4 border-foreground overflow-hidden shadow-[inset_0_0_10px_black,0_0_10px_hsl(var(--primary)/0.5)] flex items-center justify-center">
                     {isProcessing && <PokedexScanner />}
                     
                     {imageSrc ? (
-                         <Image src={imageSrc} alt="Pokémon Preview" fill className="object-contain" />
+                         <button 
+                             onClick={handleIdentify} 
+                             disabled={isProcessing}
+                             className="w-full h-full bg-black cursor-pointer group disabled:cursor-wait"
+                             aria-label="Tap to identify the captured Pokémon"
+                         >
+                            <Image src={imageSrc} alt="Pokémon Preview" fill className="object-contain" />
+                            {!isProcessing && (
+                                <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    <Send className="w-10 h-10 text-white" />
+                                    <p className="mt-2 text-sm font-bold text-white uppercase font-headline">Identify</p>
+                                </div>
+                            )}
+                         </button>
                     ) : (
                         <Webcam
                             audio={false}
@@ -158,17 +183,7 @@ export default function SnapPage() {
                 </div>
 
                 <div className="mt-6 w-full max-w-md p-4 bg-foreground/20 border-t-4 border-foreground">
-                    {imageSrc ? (
-                        <div className="flex items-center justify-center gap-6">
-                            <Button onClick={handleRetake} disabled={isProcessing} variant="outline" className="border-2 border-gray-400 bg-gray-900 text-gray-50 hover:bg-gray-700 hover:text-white">
-                                <RefreshCw className="mr-2"/> Retake
-                            </Button>
-                            <Button onClick={handleIdentify} disabled={isProcessing}>
-                                {isProcessing ? <Loader2 className="mr-2 animate-spin"/> : <Send className="mr-2" />}
-                                Identify
-                            </Button>
-                        </div>
-                    ) : (
+                    {!imageSrc && (
                         <div className="flex items-center justify-center gap-6">
                             <div className="w-8 h-8 bg-yellow-400 rounded-full border-2 border-foreground animate-pulse" />
                             <button
