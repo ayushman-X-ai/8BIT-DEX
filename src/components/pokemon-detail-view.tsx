@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, ReactElement } from "react";
+import React, { useState, ReactElement, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Heart, Weight, Ruler } from "lucide-react";
+import { ArrowLeft, Heart, Weight, Ruler, Volume2 } from "lucide-react";
 import type { Pokemon, PokemonSpecies } from "@/types/pokemon";
 import { 
   capitalize, 
@@ -80,6 +80,17 @@ const StatBar = ({ value, max }: { value: number; max: number }) => {
 export default function PokemonDetailView({ pokemon }: { pokemon: CombinedPokemonData }) {
     const [activeTab, setActiveTab] = useState('about');
     const [isFavorite, setIsFavorite] = useState(false);
+    const audioRef = useRef<HTMLAudioElement>(null);
+
+    const audioUrl = `https://play.pokemonshowdown.com/audio/cries/${pokemon.name.toLowerCase()}.mp3`;
+
+    useEffect(() => {
+        // Attempt to play the audio when the component mounts or the pokemon changes.
+        // This might be blocked by browser autoplay policies.
+        audioRef.current?.play().catch(error => {
+            console.warn("Audio autoplay was prevented:", error);
+        });
+    }, [pokemon.name]); // Re-run when the pokemon changes
 
     const flavorText = getEnglishFlavorText(pokemon.flavor_text_entries);
     const gender = getGenderRatio(pokemon.gender_rate);
@@ -137,7 +148,12 @@ export default function PokemonDetailView({ pokemon }: { pokemon: CombinedPokemo
                             <span className="absolute bottom-1 right-2 text-lg font-bold text-black/50">{formatPokemonId(pokemon.id)}</span>
                         </div>
                         <div className="flex-grow text-center md:text-left">
-                            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-headline uppercase tracking-wide text-foreground">{capitalize(pokemon.name)}</h1>
+                            <div className="flex items-center justify-center md:justify-start gap-2">
+                                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-headline uppercase tracking-wide text-foreground">{capitalize(pokemon.name)}</h1>
+                                <Button variant="ghost" size="icon" onClick={() => audioRef.current?.play()} aria-label="Play Pokémon cry">
+                                    <Volume2 className="h-6 w-6 text-muted-foreground transition-colors hover:text-accent" />
+                                </Button>
+                            </div>
                             <p className="mt-2 text-muted-foreground leading-relaxed max-w-prose mx-auto md:mx-0 text-xs">{flavorText}</p>
                             <div className="flex justify-center md:justify-start gap-2 mt-4">
                                 {pokemon.types.map(({ type }) => (
@@ -292,6 +308,7 @@ export default function PokemonDetailView({ pokemon }: { pokemon: CombinedPokemo
                     </div>
                 </div>
             </main>
+            <audio ref={audioRef} src={audioUrl} preload="auto" className="hidden" />
             <footer className="text-center py-4 text-xs text-muted-foreground font-code">
                 Made By Ayushman
             </footer>
