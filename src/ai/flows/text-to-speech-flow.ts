@@ -16,6 +16,10 @@ const TextToSpeechOutputSchema = z.object({
 export type TextToSpeechOutput = z.infer<typeof TextToSpeechOutputSchema>;
 
 export async function textToSpeech(text: string): Promise<TextToSpeechOutput> {
+  // Prevent flow from running with an empty string, which may cause errors.
+  if (!text || text.trim() === '') {
+    return { media: '' };
+  }
   return textToSpeechFlow(text);
 }
 
@@ -53,7 +57,7 @@ const textToSpeechFlow = ai.defineFlow(
     outputSchema: TextToSpeechOutputSchema,
   },
   async (query) => {
-    const { media } = await ai.generate({
+    const result = await ai.generate({
       model: 'googleai/gemini-2.5-flash-preview-tts',
       config: {
         responseModalities: ['AUDIO'],
@@ -66,7 +70,14 @@ const textToSpeechFlow = ai.defineFlow(
       prompt: query,
     });
 
+    const media = result.media;
+    const candidate = result.candidates[0];
+
     if (!media) {
+      // Add more context to the error if available from the API response.
+      if (candidate && candidate.finishReason && !['stop', 'success'].includes(candidate.finishReason)) {
+        throw new Error(`TTS generation failed. Reason: ${candidate.finishReason}. ${candidate.finishMessage || ''}`);
+      }
       throw new Error('No media was returned from the TTS service.');
     }
 
