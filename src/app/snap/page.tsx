@@ -12,8 +12,6 @@ import Webcam from 'react-webcam';
 import Image from 'next/image';
 import { capitalize } from '@/lib/pokemon-utils';
 import { textToSpeech } from '@/ai/flows/text-to-speech-flow';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { findPokemonByKeywords } from '@/lib/pokemon-keyword-map';
 
 const PokedexScanner = () => (
     <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center z-20 overflow-hidden">
@@ -57,7 +55,6 @@ export default function SnapPage() {
     const router = useRouter();
     const { toast } = useToast();
     const webcamRef = useRef<Webcam>(null);
-    const isMobile = useIsMobile();
     
     const [isProcessing, setIsProcessing] = useState(false);
     const [imageSrc, setImageSrc] = useState<string | null>(null);
@@ -86,49 +83,6 @@ export default function SnapPage() {
        setIsProcessing(false);
        setImageSrc(null); // Reset view to camera on failure
    };
-
-    const identifyWithVisionApi = async (imageDataUri: string) => {
-        const visionApiKey = process.env.NEXT_PUBLIC_VISION_API_KEY;
-        if (!visionApiKey) {
-            handleFailure("Vision API key is not configured for mobile.");
-            return;
-        }
-
-        const body = {
-            requests: [{
-                image: { content: imageDataUri.split(',')[1] }, // remove base64 prefix
-                features: [{ type: 'LABEL_DETECTION', maxResults: 15 }]
-            }]
-        };
-
-        try {
-            const response = await fetch(`https://vision.googleapis.com/v1/images:annotate?key=${visionApiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-
-            if (!response.ok) throw new Error('Vision API request failed.');
-
-            const data = await response.json();
-            const labels = data.responses[0]?.labelAnnotations?.map((a: any) => a.description) || [];
-            
-            if (labels.length === 0) {
-                 handleFailure('No descriptive labels found in the image.');
-                 return;
-            }
-
-            const pokemonName = findPokemonByKeywords(labels);
-            if (pokemonName) {
-                await handleSuccess(pokemonName);
-            } else {
-                handleFailure(`Could not identify a Pokémon. (Labels: ${labels.join(', ')})`);
-            }
-        } catch (error) {
-            console.error('Vision API identification error:', error);
-            handleFailure('An error occurred during Vision API identification.');
-        }
-    };
     
     const identifyWithGenkit = async (imageDataUri: string) => {
         try {
@@ -159,12 +113,10 @@ export default function SnapPage() {
         setIsProcessing(true);
         setImageSrc(imageData);
         
-        if (isMobile) {
-            await identifyWithVisionApi(imageData);
-        } else {
-            await identifyWithGenkit(imageData);
-        }
-    }, [isProcessing, router, toast, webcamRef, isMobile]);
+        // Use the same robust Genkit flow for all devices.
+        await identifyWithGenkit(imageData);
+
+    }, [isProcessing, router, toast, webcamRef]);
     
     const getSystemStatus = () => {
         if (isProcessing) return 'PROCESSING';
