@@ -71,7 +71,7 @@ const textToSpeechFlow = ai.defineFlow(
     });
 
     const media = result.media;
-    const candidate = result.candidates[0];
+    const candidate = result.candidates?.[0];
 
     if (!media) {
       // Add more context to the error if available from the API response.
