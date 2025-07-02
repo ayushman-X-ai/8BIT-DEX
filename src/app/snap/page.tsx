@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Resizer from 'react-image-file-resizer';
@@ -13,6 +13,7 @@ import Image from 'next/image';
 import { capitalize } from '@/lib/pokemon-utils';
 import { textToSpeech } from '@/ai/flows/text-to-speech-flow';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { findPokemonByKeywords } from '@/lib/pokemon-keyword-map';
 
 const PokedexScanner = () => (
     <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center z-20 overflow-hidden">
@@ -30,42 +31,27 @@ const PokedexScanner = () => (
     </div>
 );
 
-// Function to convert base64 to Blob
-const dataURIToBlob = (dataURI: string): Blob => {
-    const splitDataURI = dataURI.split(',');
-    const byteString = splitDataURI[0].indexOf('base64') >= 0 ? atob(splitDataURI[1]) : decodeURI(splitDataURI[1]);
-    const mimeString = splitDataURI[0].split(':')[1].split(';')[0];
-
-    const ia = new Uint8Array(byteString.length);
-    for (let i = 0; i < byteString.length; i++) {
-        ia[i] = byteString.charCodeAt(i);
-    }
-    return new Blob([ia], { type: mimeString });
-};
-
-
 // Resizes an image file (Blob) and returns a new base64 Data URI
 const resizeImageFile = (file: Blob): Promise<string> => {
     return new Promise((resolve, reject) => {
         try {
             Resizer.imageFileResizer(
-                file,     // The file to resize
-                512,      // Max width
-                512,      // Max height
-                'JPEG',   // Format
-                80,       // Quality
-                0,        // Rotation
-                (uri) => {
-                    resolve(uri as string);
-                },
-                'base64'  // Output type
+                file, 512, 512, 'JPEG', 80, 0,
+                (uri) => { resolve(uri as string); },
+                'base64'
             );
-        } catch (error) {
-            reject(error);
-        }
+        } catch (error) { reject(error); }
     });
 };
 
+const dataURIToBlob = (dataURI: string): Blob => {
+    const splitDataURI = dataURI.split(',');
+    const byteString = splitDataURI[0].indexOf('base64') >= 0 ? atob(splitDataURI[1]) : decodeURI(splitDataURI[1]);
+    const mimeString = splitDataURI[0].split(':')[1].split(';')[0];
+    const ia = new Uint8Array(byteString.length);
+    for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+    return new Blob([ia], { type: mimeString });
+};
 
 export default function SnapPage() {
     const router = useRouter();
@@ -76,58 +62,79 @@ export default function SnapPage() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [imageSrc, setImageSrc] = useState<string | null>(null);
 
-    const videoConstraints = {
-        width: 1280,
-        height: 720,
-        facingMode: "environment"
-    };
+    const videoConstraints = { width: 1280, height: 720, facingMode: "environment" };
 
-    const captureAndIdentify = useCallback(async () => {
-        if (isProcessing) return;
+    const handleSuccess = async (pokemonName: string) => {
+        try {
+           const pokemonNameToSpeak = capitalize(pokemonName);
+           const ttsResult = await textToSpeech(pokemonNameToSpeak);
+           if (ttsResult.media) {
+               sessionStorage.setItem('ttsAudioData', ttsResult.media);
+           }
+       } catch (ttsError) {
+           console.error("Failed to generate or store TTS audio:", ttsError);
+       }
+       router.push(`/pokemon/${pokemonName.toLowerCase()}`);
+   };
 
-        const imageData = webcamRef.current?.getScreenshot();
-        if (!imageData) {
-            toast({
-                variant: 'destructive',
-                title: 'Capture Failed',
-                description: 'Could not capture an image from the camera.',
-            });
+   const handleFailure = (message: string) => {
+        toast({
+           variant: 'destructive',
+           title: 'Identification Failed',
+           description: message,
+       });
+       setIsProcessing(false);
+       setImageSrc(null); // Reset view to camera on failure
+   };
+
+    const identifyWithVisionApi = async (imageDataUri: string) => {
+        const visionApiKey = process.env.NEXT_PUBLIC_VISION_API_KEY;
+        if (!visionApiKey) {
+            handleFailure("Vision API key is not configured for mobile.");
             return;
         }
 
-        setIsProcessing(true);
-        setImageSrc(imageData);
-        
-        const handleSuccess = async (pokemonName: string) => {
-             try {
-                const pokemonNameToSpeak = capitalize(pokemonName);
-                const ttsResult = await textToSpeech(pokemonNameToSpeak);
-                if (ttsResult.media) {
-                    sessionStorage.setItem('ttsAudioData', ttsResult.media);
-                }
-            } catch (ttsError) {
-                console.error("Failed to generate or store TTS audio:", ttsError);
-            }
-            router.push(`/pokemon/${pokemonName.toLowerCase()}`);
-        };
-
-        const handleFailure = (message: string) => {
-             toast({
-                variant: 'destructive',
-                title: 'Identification Failed',
-                description: message,
-            });
-            setIsProcessing(false);
-            setImageSrc(null); // Reset view to camera on failure
+        const body = {
+            requests: [{
+                image: { content: imageDataUri.split(',')[1] }, // remove base64 prefix
+                features: [{ type: 'LABEL_DETECTION', maxResults: 15 }]
+            }]
         };
 
         try {
-            const imageBlob = dataURIToBlob(imageData);
-            const resizedDataUri = await resizeImageFile(imageBlob);
-            const result = await identifyPokemon({
-                photoDataUri: resizedDataUri,
-                isMobile: !!isMobile
+            const response = await fetch(`https://vision.googleapis.com/v1/images:annotate?key=${visionApiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
             });
+
+            if (!response.ok) throw new Error('Vision API request failed.');
+
+            const data = await response.json();
+            const labels = data.responses[0]?.labelAnnotations?.map((a: any) => a.description) || [];
+            
+            if (labels.length === 0) {
+                 handleFailure('No descriptive labels found in the image.');
+                 return;
+            }
+
+            const pokemonName = findPokemonByKeywords(labels);
+            if (pokemonName) {
+                await handleSuccess(pokemonName);
+            } else {
+                handleFailure(`Could not identify a Pokémon. (Labels: ${labels.join(', ')})`);
+            }
+        } catch (error) {
+            console.error('Vision API identification error:', error);
+            handleFailure('An error occurred during Vision API identification.');
+        }
+    };
+    
+    const identifyWithGenkit = async (imageDataUri: string) => {
+        try {
+            const imageBlob = dataURIToBlob(imageDataUri);
+            const resizedDataUri = await resizeImageFile(imageBlob);
+            const result = await identifyPokemon({ photoDataUri: resizedDataUri });
 
             if (result.pokemonName) {
                 await handleSuccess(result.pokemonName);
@@ -135,8 +142,27 @@ export default function SnapPage() {
                 handleFailure('Could not identify a Pokémon. Please try again.');
             }
         } catch (error) {
-            console.error('AI identification error:', error);
+            console.error('Genkit identification error:', error);
             handleFailure('An error occurred while trying to identify the Pokémon.');
+        }
+    }
+
+    const captureAndIdentify = useCallback(async () => {
+        if (isProcessing) return;
+
+        const imageData = webcamRef.current?.getScreenshot();
+        if (!imageData) {
+            toast({ variant: 'destructive', title: 'Capture Failed', description: 'Could not capture an image.' });
+            return;
+        }
+
+        setIsProcessing(true);
+        setImageSrc(imageData);
+        
+        if (isMobile) {
+            await identifyWithVisionApi(imageData);
+        } else {
+            await identifyWithGenkit(imageData);
         }
     }, [isProcessing, router, toast, webcamRef, isMobile]);
     
