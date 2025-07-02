@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import * as tmImage from '@teachablemachine/image';
 import Resizer from 'react-image-file-resizer';
 import { ArrowLeft, RadioTower, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -75,12 +76,38 @@ export default function SnapPage() {
     
     const [isProcessing, setIsProcessing] = useState(false);
     const [imageSrc, setImageSrc] = useState<string | null>(null);
+    const [model, setModel] = useState<tmImage.CustomMobileNet | null>(null);
+    const [isModelLoading, setIsModelLoading] = useState(false);
 
     const videoConstraints = {
         width: 1280,
         height: 720,
         facingMode: "environment"
     };
+
+    useEffect(() => {
+        if (isMobile) {
+            const loadModel = async () => {
+                setIsModelLoading(true);
+                try {
+                    const modelURL = '/model/model.json';
+                    const metadataURL = '/model/metadata.json';
+                    const loadedModel = await tmImage.load(modelURL, metadataURL);
+                    setModel(loadedModel);
+                } catch (error) {
+                    console.error("Failed to load the model:", error);
+                    toast({
+                        variant: 'destructive',
+                        title: 'Model Failed to Load',
+                        description: 'Could not load the on-device Pokémon classifier.',
+                    });
+                } finally {
+                    setIsModelLoading(false);
+                }
+            };
+            loadModel();
+        }
+    }, [isMobile, toast]);
 
     const captureAndIdentify = useCallback(async () => {
         if (isProcessing) return;
@@ -98,44 +125,76 @@ export default function SnapPage() {
         setIsProcessing(true);
         setImageSrc(imageData);
         
-        try {
-            const imageBlob = dataURIToBlob(imageData);
-            const resizedDataUri = await resizeImageFile(imageBlob);
-            const result = await identifyPokemon({ photoDataUri: resizedDataUri, isMobile });
-
-            if (result.pokemonName) {
-                try {
-                    const pokemonNameToSpeak = capitalize(result.pokemonName);
-                    const ttsResult = await textToSpeech(pokemonNameToSpeak);
-                    if (ttsResult.media) {
-                        sessionStorage.setItem('ttsAudioData', ttsResult.media);
-                    }
-                } catch (ttsError) {
-                    console.error("Failed to generate or store TTS audio:", ttsError);
+        const handleSuccess = async (pokemonName: string) => {
+             try {
+                const pokemonNameToSpeak = capitalize(pokemonName);
+                const ttsResult = await textToSpeech(pokemonNameToSpeak);
+                if (ttsResult.media) {
+                    sessionStorage.setItem('ttsAudioData', ttsResult.media);
                 }
-                
-                router.push(`/pokemon/${result.pokemonName.toLowerCase()}`);
-            } else {
-                toast({
-                    variant: 'destructive',
-                    title: 'Identification Failed',
-                    description: 'Could not identify a Pokémon. Please try again.',
-                });
-                setIsProcessing(false);
-                setImageSrc(null); // Reset view to camera on failure
+            } catch (ttsError) {
+                console.error("Failed to generate or store TTS audio:", ttsError);
             }
-        } catch (error) {
-            console.error('AI identification error:', error);
-            toast({
+            router.push(`/pokemon/${pokemonName.toLowerCase()}`);
+        };
+
+        const handleFailure = (message: string) => {
+             toast({
                 variant: 'destructive',
-                title: 'AI Error',
-                description: 'An error occurred while trying to identify the Pokémon.',
+                title: 'Identification Failed',
+                description: message,
             });
             setIsProcessing(false);
-            setImageSrc(null); // Reset view to camera on error
+            setImageSrc(null); // Reset view to camera on failure
+        };
+
+        if (isMobile) {
+            if (!model) {
+                handleFailure('The on-device scanner is not ready. Please wait.');
+                return;
+            }
+            try {
+                const img = document.createElement('img');
+                img.src = imageData;
+                img.onload = async () => {
+                    const predictions = await model.predict(img);
+                    const bestPrediction = predictions.reduce((prev, current) => (prev.probability > current.probability) ? prev : current);
+                    
+                    if (bestPrediction && bestPrediction.probability > 0.7) { // Confidence threshold
+                        await handleSuccess(bestPrediction.className);
+                    } else {
+                        handleFailure('Could not identify a Pokémon. Please try again.');
+                    }
+                };
+                img.onerror = () => handleFailure('Could not process the captured image.');
+            } catch (error) {
+                console.error('On-device prediction error:', error);
+                handleFailure('An error occurred with the on-device scanner.');
+            }
+        } else {
+            try {
+                const imageBlob = dataURIToBlob(imageData);
+                const resizedDataUri = await resizeImageFile(imageBlob);
+                const result = await identifyPokemon({ photoDataUri: resizedDataUri });
+
+                if (result.pokemonName) {
+                    await handleSuccess(result.pokemonName);
+                } else {
+                    handleFailure('Could not identify a Pokémon. Please try again.');
+                }
+            } catch (error) {
+                console.error('AI identification error:', error);
+                handleFailure('An error occurred while trying to identify the Pokémon.');
+            }
         }
-    }, [isProcessing, router, toast, webcamRef, isMobile]);
+    }, [isProcessing, router, toast, webcamRef, isMobile, model]);
     
+    const getSystemStatus = () => {
+        if (isMobile && isModelLoading) return 'LOADING MODEL...';
+        if (isProcessing) return 'PROCESSING';
+        return 'READY';
+    };
+
     return (
         <div className="bg-black min-h-screen font-body flex flex-col">
             <header className="py-4 px-4 md:px-8 border-b-4 border-gray-700 sticky top-0 z-10 bg-black">
@@ -159,7 +218,7 @@ export default function SnapPage() {
 
             <main className="flex-grow flex flex-col items-center justify-center p-4">
                 <div className="w-full max-w-md space-y-2 text-center mb-4">
-                    <p className="font-code text-xs text-green-400 uppercase">SYSTEM STATUS: <span className="text-white">{isProcessing ? 'PROCESSING' : 'READY'}</span></p>
+                    <p className="font-code text-xs text-green-400 uppercase">SYSTEM STATUS: <span className="text-white">{getSystemStatus()}</span></p>
                     <p className="font-code text-xs text-green-400 uppercase">TARGETING: <span className="text-white">{imageSrc ? 'CAPTURED' : 'LIVE'}</span></p>
                 </div>
                 
@@ -192,7 +251,7 @@ export default function SnapPage() {
                         <div className="w-8 h-8 bg-yellow-400 rounded-full border-2 border-foreground animate-pulse" />
                         <button
                             onClick={captureAndIdentify}
-                            disabled={isProcessing}
+                            disabled={isProcessing || (isMobile && isModelLoading)}
                             aria-label="Capture and Identify Pokémon"
                             className="relative group h-20 w-20 rounded-full border-4 border-foreground bg-card overflow-hidden shadow-lg transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-black disabled:opacity-50 disabled:cursor-wait"
                         >

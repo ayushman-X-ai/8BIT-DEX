@@ -1,6 +1,7 @@
 'use server';
 /**
- * @fileOverview An AI flow to identify a Pokémon from an image.
+ * @fileOverview An AI flow to identify a Pokémon from an image using the Gemini API.
+ * This flow is intended for desktop/non-mobile use.
  *
  * - identifyPokemon - A function that handles the Pokémon identification process.
  * - IdentifyPokemonInput - The input type for the identifyPokemon function.
@@ -8,9 +9,7 @@
  */
 
 import { z } from 'genkit';
-import { googleAI } from '@genkit-ai/googleai';
-import { genkit } from 'genkit';
-import { ai as defaultAi } from '@/ai/genkit';
+import { ai } from '@/ai/genkit';
 
 const IdentifyPokemonInputSchema = z.object({
   photoDataUri: z
@@ -18,7 +17,6 @@ const IdentifyPokemonInputSchema = z.object({
     .describe(
       "A photo containing a Pokémon, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
-  isMobile: z.boolean().describe('Whether the request is from a mobile device.'),
 });
 export type IdentifyPokemonInput = z.infer<typeof IdentifyPokemonInputSchema>;
 
@@ -31,51 +29,27 @@ export async function identifyPokemon(input: IdentifyPokemonInput): Promise<Iden
   return identifyPokemonFlow(input);
 }
 
-const PROMPT_TEXT = `You are a Pokémon expert. Your task is to identify the Pokémon in the provided image.
+const identifyPokemonPrompt = ai.definePrompt({
+  name: 'identifyPokemonPrompt',
+  input: {schema: IdentifyPokemonInputSchema},
+  output: {schema: IdentifyPokemonOutputSchema},
+  prompt: `You are a Pokémon expert. Your task is to identify the Pokémon in the provided image.
 
 Respond with only the common English name of the Pokémon in lowercase.
 
 If the image does not contain a Pokémon, or if you cannot confidently identify it, respond with an empty string.
 
-Photo: {{media url=photoDataUri}}`;
-
-// Create a separate Genkit instance for mobile scanning to use the dedicated API key.
-// We use gemini-2.0-flash as it is suitable for vision tasks.
-const mobileAi = genkit({
-  plugins: [googleAI({ apiKey: process.env.SCANNER_API_KEY })],
+Photo: {{media url=photoDataUri}}`,
 });
 
-// Prompt for mobile devices, using the scanner-specific AI instance and model
-const mobilePrompt = mobileAi.definePrompt({
-  name: 'identifyPokemonPromptMobile',
-  model: 'googleai/gemini-2.0-flash',
-  input: {schema: IdentifyPokemonInputSchema},
-  output: {schema: IdentifyPokemonOutputSchema},
-  prompt: PROMPT_TEXT,
-});
-
-// Prompt for non-mobile devices, using the default AI model
-const desktopPrompt = defaultAi.definePrompt({
-  name: 'identifyPokemonPromptDesktop',
-  input: {schema: IdentifyPokemonInputSchema},
-  output: {schema: IdentifyPokemonOutputSchema},
-  prompt: PROMPT_TEXT,
-});
-
-// A single flow that routes to the correct prompt based on the device type
-const identifyPokemonFlow = defaultAi.defineFlow(
+const identifyPokemonFlow = ai.defineFlow(
   {
     name: 'identifyPokemonFlow',
     inputSchema: IdentifyPokemonInputSchema,
     outputSchema: IdentifyPokemonOutputSchema,
   },
   async (input) => {
-    let result;
-    if (input.isMobile) {
-      result = await mobilePrompt(input);
-    } else {
-      result = await desktopPrompt(input);
-    }
+    const result = await identifyPokemonPrompt(input);
     // The exclamation mark tells TypeScript that we are sure output will not be null.
     return result.output!;
   }
