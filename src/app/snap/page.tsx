@@ -205,8 +205,8 @@ export default function SnapPage() {
     };
     
     return (
-        <div className="bg-foreground min-h-screen font-body flex flex-col">
-            <header className="py-4 px-4 md:px-8 border-b-4 border-foreground/50 sticky top-0 z-10 bg-foreground">
+        <div className="bg-background min-h-screen font-body flex flex-col">
+            <header className="py-4 px-4 md:px-8 border-b-4 border-foreground sticky top-0 z-10 bg-background">
               <div className="container mx-auto grid grid-cols-[auto_1fr_auto] items-center gap-4">
                   <Link href="/" aria-label="Back to 8BitDex">
                       <Button variant="outline" size="xs" className="border-2 border-foreground bg-background text-foreground hover:bg-accent hover:text-accent-foreground">
@@ -214,11 +214,11 @@ export default function SnapPage() {
                           Back
                       </Button>
                   </Link>
-                  <h1 className="text-sm sm:text-lg font-bold font-headline text-background uppercase tracking-normal sm:tracking-wider text-center">
+                  <h1 className="text-xs sm:text-lg font-bold font-headline text-foreground uppercase tracking-tighter sm:tracking-wider text-center">
                       8BIT-SCANNER
                   </h1>
                   <div className="flex justify-end">
-                    <RadioTower className="text-background/50" />
+                    <RadioTower className="text-foreground/50" />
                   </div>
               </div>
             </header>
@@ -283,7 +283,7 @@ export default function SnapPage() {
                     </div>
                 </div>
             </main>
-            <footer className="text-center py-4 text-xs text-background/50 font-code bg-black">
+            <footer className="text-center py-4 text-xs text-muted-foreground font-code bg-black">
                 Made By Ayushman
             </footer>
         </div>
