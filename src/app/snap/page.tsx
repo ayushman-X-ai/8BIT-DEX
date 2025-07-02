@@ -206,17 +206,19 @@ export default function SnapPage() {
     
     return (
         <div className="bg-foreground min-h-screen font-body flex flex-col">
-            <header className="py-4 px-4 md:px-8 border-b-4 border-foreground/50 sticky top-0 z-10 bg-foreground flex items-center justify-between">
-                <Link href="/" aria-label="Back to 8BitDex">
-                    <Button variant="outline" size="sm" className="border-2 border-foreground bg-background text-foreground hover:bg-accent hover:text-accent-foreground">
-                        <ArrowLeft className="h-4 w-4 mr-2" />
-                        Back
-                    </Button>
-                </Link>
-                 <h1 className="text-lg sm:text-xl font-bold font-headline text-background uppercase tracking-wider text-center">
+            <header className="py-4 px-4 md:px-8 border-b-4 border-foreground/50 sticky top-0 z-10 bg-foreground grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+                <div className="flex justify-start">
+                    <Link href="/" aria-label="Back to 8BitDex">
+                        <Button variant="outline" size="sm" className="border-2 border-foreground bg-background text-foreground hover:bg-accent hover:text-accent-foreground">
+                            <ArrowLeft className="h-4 w-4 mr-2" />
+                            Back
+                        </Button>
+                    </Link>
+                </div>
+                 <h1 className="text-lg sm:text-xl font-bold font-headline text-background uppercase tracking-wider text-center col-start-2">
                     8Bit-Scanner
                  </h1>
-                <div className="w-[88px] sm:w-[100px] flex justify-end">
+                <div className="flex justify-end">
                   <RadioTower className="text-background/50" />
                 </div>
             </header>
