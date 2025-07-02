@@ -205,8 +205,8 @@ export default function SnapPage() {
     };
     
     return (
-        <div className="bg-background min-h-screen font-body flex flex-col">
-            <header className="py-4 px-4 md:px-8 border-b-4 border-foreground sticky top-0 z-10 bg-background">
+        <div className="bg-black min-h-screen font-body flex flex-col">
+            <header className="py-4 px-4 md:px-8 border-b-4 border-foreground sticky top-0 z-10 bg-black">
               <div className="container mx-auto grid grid-cols-[auto_1fr_auto] items-center gap-4">
                   <Link href="/" aria-label="Back to 8BitDex">
                       <Button variant="outline" size="xs" className="border-2 border-foreground bg-background text-foreground hover:bg-accent hover:text-accent-foreground">
@@ -214,7 +214,7 @@ export default function SnapPage() {
                           Back
                       </Button>
                   </Link>
-                  <h1 className="text-xs sm:text-lg font-bold font-headline text-foreground uppercase tracking-tighter sm:tracking-wider text-center">
+                  <h1 className="text-xs sm:text-base font-bold font-headline text-foreground uppercase tracking-tighter sm:tracking-widest text-center">
                       8BIT-SCANNER
                   </h1>
                   <div className="flex justify-end">
@@ -223,7 +223,7 @@ export default function SnapPage() {
               </div>
             </header>
 
-            <main className="flex-grow flex flex-col items-center justify-center p-4 bg-black">
+            <main className="flex-grow flex flex-col items-center justify-center p-4">
                 <div className="w-full max-w-md space-y-2 text-center mb-4">
                     <p className="font-code text-xs text-green-400 uppercase">SYSTEM STATUS: <span className="text-white">ONLINE</span></p>
                     <p className="font-code text-xs text-green-400 uppercase">TARGETING: <span className="text-white">POKEMON</span></p>
@@ -265,21 +265,29 @@ export default function SnapPage() {
                 </div>
                 <div className="mt-6 w-full max-w-md p-4 bg-foreground/20 border-t-4 border-foreground">
                     <div className="flex items-center justify-center gap-6">
-                        <div className="w-8 h-8 bg-primary rounded-full border-2 border-foreground animate-pulse" />
-                        <Button
-                            size="lg"
-                            className="h-20 w-20 rounded-full border-4 border-foreground bg-primary hover:bg-primary/90 focus-visible:ring-offset-8 active:scale-95 transition-transform disabled:bg-muted disabled:cursor-not-allowed"
+                        <div className="w-8 h-8 bg-accent rounded-full border-2 border-foreground animate-pulse" />
+                        <button
                             onClick={handleCapture}
                             disabled={isProcessing || !isCameraReady || hasCameraPermission !== true}
                             aria-label="Capture Pokémon"
+                            className="relative group h-20 w-20 rounded-full border-4 border-foreground bg-card overflow-hidden shadow-lg transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-black disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {!isCameraReady && hasCameraPermission ? (
-                                <Loader2 className="h-10 w-10 text-primary-foreground animate-spin" />
-                            ) : (
-                                <Camera className="h-10 w-10 text-primary-foreground" />
-                            )}
-                        </Button>
-                        <div className="w-8 h-8 bg-primary rounded-full border-2 border-foreground animate-pulse" />
+                            {/* Top red part */}
+                            <div className="absolute top-0 left-0 h-1/2 w-full bg-primary" />
+                            
+                            {/* Black band */}
+                            <div className="absolute top-1/2 left-0 w-full h-3.5 -translate-y-1/2 bg-foreground z-10" />
+
+                            {/* Center circle button */}
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card border-[3px] border-foreground z-20 flex items-center justify-center group-hover:border-accent transition-colors">
+                                {!isCameraReady && hasCameraPermission ? (
+                                    <Loader2 className="h-5 w-5 text-foreground animate-spin" />
+                                ) : (
+                                    <Camera className="h-5 w-5 text-foreground" />
+                                )}
+                            </div>
+                        </button>
+                        <div className="w-8 h-8 bg-accent rounded-full border-2 border-foreground animate-pulse" />
                     </div>
                 </div>
             </main>
