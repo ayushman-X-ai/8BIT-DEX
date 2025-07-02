@@ -1,15 +1,15 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
-import { ArrowLeft, RadioTower, Loader2, Camera, RefreshCw, Send } from 'lucide-react';
+import Webcam from 'react-webcam';
 import Resizer from 'react-image-file-resizer';
-
+import { ArrowLeft, RadioTower, Loader2, Camera, RefreshCw, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { identifyPokemon } from '@/ai/flows/identify-pokemon-flow';
+import Image from 'next/image';
 
 const PokedexScanner = () => (
     <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center z-20 overflow-hidden">
@@ -27,74 +27,63 @@ const PokedexScanner = () => (
     </div>
 );
 
-// Resizes a File object and returns a base64 Data URI
-const resizeFile = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    try {
-      Resizer.imageFileResizer(
-        file,
-        512, // Max width
-        512, // Max height
-        'JPEG', // Format
-        80,   // Quality
-        0,    // Rotation
-        (uri) => {
-          resolve(uri as string);
-        },
-        'base64' // Output type
-      );
-    } catch (error) {
-      reject(error);
-    }
-  });
+// Resizes a base64 Data URI and returns a new base64 Data URI
+const resizeDataUri = (dataUri: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        try {
+            Resizer.imageFileResizer(
+                dataUri, // Is the base64 string
+                512,      // Max width
+                512,      // Max height
+                'JPEG',   // Format
+                80,       // Quality
+                0,        // Rotation
+                (uri) => {
+                    resolve(uri as string);
+                },
+                'base64'  // Output type
+            );
+        } catch (error) {
+            reject(error);
+        }
+    });
 };
 
 
 export default function SnapPage() {
     const router = useRouter();
     const { toast } = useToast();
-    const inputRef = useRef<HTMLInputElement>(null);
+    const webcamRef = useRef<Webcam>(null);
 
     const [isProcessing, setIsProcessing] = useState(false);
-    const [capturedFile, setCapturedFile] = useState<File | null>(null);
-    const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+    const [imageSrc, setImageSrc] = useState<string | null>(null);
 
-    const triggerFileInput = () => {
-        inputRef.current?.click();
+    const videoConstraints = {
+        width: 1280,
+        height: 720,
+        facingMode: "environment"
     };
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            setCapturedFile(file);
-            // Revoke previous URL if it exists
-            if (imagePreviewUrl) {
-                URL.revokeObjectURL(imagePreviewUrl);
-            }
-            const previewUrl = URL.createObjectURL(file);
-            setImagePreviewUrl(previewUrl);
+    const capture = useCallback(() => {
+        const image = webcamRef.current?.getScreenshot();
+        if (image) {
+            setImageSrc(image);
         }
-    };
+    }, [webcamRef]);
 
     const handleRetake = () => {
-        setCapturedFile(null);
-        if (imagePreviewUrl) {
-            URL.revokeObjectURL(imagePreviewUrl); // Clean up memory
-        }
-        setImagePreviewUrl(null);
-        if (inputRef.current) {
-            inputRef.current.value = "";
-        }
+        setImageSrc(null);
     };
 
     const handleIdentify = async () => {
-        if (!capturedFile) return;
+        if (!imageSrc) return;
         
         setIsProcessing(true);
         
         try {
-            const resizedDataUri = await resizeFile(capturedFile);
+            const resizedDataUri = await resizeDataUri(imageSrc);
             const result = await identifyPokemon({ photoDataUri: resizedDataUri });
+
             if (result.pokemonName) {
                 router.push(`/pokemon/${result.pokemonName.toLowerCase()}`);
             } else {
@@ -115,15 +104,6 @@ export default function SnapPage() {
             setIsProcessing(false);
         }
     };
-    
-    // Clean up the object URL when the component unmounts
-    useEffect(() => {
-        return () => {
-            if (imagePreviewUrl) {
-                URL.revokeObjectURL(imagePreviewUrl);
-            }
-        };
-    }, [imagePreviewUrl]);
     
     return (
         <div className="bg-black min-h-screen font-body flex flex-col">
@@ -155,28 +135,22 @@ export default function SnapPage() {
                 <div className="relative w-full max-w-md aspect-[4/3] bg-black border-4 border-foreground overflow-hidden shadow-[inset_0_0_10px_black,0_0_10px_hsl(var(--primary)/0.5)] flex items-center justify-center">
                     {isProcessing && <PokedexScanner />}
                     
-                    {imagePreviewUrl ? (
-                         <Image src={imagePreviewUrl} alt="Pokémon Preview" fill className="object-contain" />
+                    {imageSrc ? (
+                         <Image src={imageSrc} alt="Pokémon Preview" fill className="object-contain" />
                     ) : (
-                        <div className="text-center p-4 text-gray-500">
-                            <Camera className="w-16 h-16 mx-auto mb-4"/>
-                            <h3 className="font-headline text-lg text-white">Ready to Scan</h3>
-                            <p className="text-xs mt-2 text-gray-400">Tap the button below to open your camera.</p>
-                        </div>
+                        <Webcam
+                            audio={false}
+                            ref={webcamRef}
+                            screenshotFormat="image/jpeg"
+                            videoConstraints={videoConstraints}
+                            className="w-full h-full object-cover"
+                            mirrored={false}
+                        />
                     )}
-
-                    <input
-                        ref={inputRef}
-                        type="file"
-                        accept="image/*"
-                        capture="environment"
-                        onChange={handleFileChange}
-                        className="hidden"
-                    />
                 </div>
 
                 <div className="mt-6 w-full max-w-md p-4 bg-foreground/20 border-t-4 border-foreground">
-                    {capturedFile ? (
+                    {imageSrc ? (
                         <div className="flex items-center justify-center gap-6">
                             <Button onClick={handleRetake} disabled={isProcessing} variant="outline" className="border-2 border-gray-400 bg-gray-900 text-gray-50 hover:bg-gray-700 hover:text-white">
                                 <RefreshCw className="mr-2"/> Retake
@@ -190,7 +164,7 @@ export default function SnapPage() {
                         <div className="flex items-center justify-center gap-6">
                             <div className="w-8 h-8 bg-yellow-400 rounded-full border-2 border-foreground animate-pulse" />
                             <button
-                                onClick={triggerFileInput}
+                                onClick={capture}
                                 disabled={isProcessing}
                                 aria-label="Capture Pokémon"
                                 className="relative group h-20 w-20 rounded-full border-4 border-foreground bg-card overflow-hidden shadow-lg transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-black disabled:opacity-50 disabled:cursor-not-allowed"
