@@ -1,22 +1,18 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Camera, RefreshCw, RadioTower, Loader2 } from 'lucide-react';
+import Image from 'next/image';
+import { ArrowLeft, RefreshCw, RadioTower, Loader2, Upload, Sparkles } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { identifyPokemon } from '@/ai/flows/identify-pokemon-flow';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-// New, more retro scanner animation
 const PokedexScanner = () => (
     <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center z-20 overflow-hidden">
-        {/* Scanline effect */}
         <div className="absolute left-0 w-full h-2 bg-primary/70 shadow-[0_0_10px_theme(colors.primary)] animate-scanline z-20" />
-        
-        {/* Pixel grid overlay */}
         <div 
             className="absolute inset-0" 
             style={{
@@ -24,173 +20,59 @@ const PokedexScanner = () => (
                 backgroundSize: '3px 3px',
             }}
         />
-
         <p className="font-headline text-lg sm:text-xl text-primary animate-pulse z-10 tracking-widest drop-shadow-[2px_2px_0_hsl(var(--foreground)/0.5)]">
             IDENTIFYING...
         </p>
     </div>
 );
 
-const CameraInitializing = () => (
-    <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center z-20">
-        <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
-        <p className="font-headline text-lg sm:text-xl text-primary animate-pulse tracking-widest drop-shadow-[2px_2px_0_hsl(var(--foreground)/0.5)]">
-            STARTING CAMERA...
-        </p>
+const IdleView = () => (
+    <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
+        <Upload className="w-16 h-16 text-foreground/30 mb-4" />
+        <p className="font-headline text-lg text-foreground/80">Tap the Pokéball</p>
+        <p className="text-xs text-muted-foreground mt-2">to open your camera and scan a Pokémon.</p>
     </div>
 );
 
-
-// New, more detailed camera frame
-const CameraFrame = () => (
-    <div className="absolute inset-0 pointer-events-none p-2" aria-hidden="true">
-        <div className="w-full h-full relative">
-            {/* Main corner brackets */}
-            <div className="absolute top-0 left-0 w-10 h-10 border-t-4 border-l-4 border-accent"></div>
-            <div className="absolute top-0 right-0 w-10 h-10 border-t-4 border-r-4 border-accent"></div>
-            <div className="absolute bottom-0 left-0 w-10 h-10 border-b-4 border-l-4 border-accent"></div>
-            <div className="absolute bottom-0 right-0 w-10 h-10 border-b-4 border-r-4 border-accent"></div>
-            
-            {/* Center targeting reticle */}
-            <div className="absolute top-1/2 left-1/2 w-20 h-20 -translate-x-1/2 -translate-y-1/2">
-                <div className="absolute top-0 left-0 w-5 h-px bg-accent/80"></div>
-                <div className="absolute top-0 left-0 w-px h-5 bg-accent/80"></div>
-                <div className="absolute top-0 right-0 w-5 h-px bg-accent/80"></div>
-                <div className="absolute top-0 right-0 w-px h-5 bg-accent/80"></div>
-                <div className="absolute bottom-0 left-0 w-5 h-px bg-accent/80"></div>
-                <div className="absolute bottom-0 left-0 w-px h-5 bg-accent/80"></div>
-                <div className="absolute bottom-0 right-0 w-5 h-px bg-accent/80"></div>
-                <div className="absolute bottom-0 right-0 w-px h-5 bg-accent/80"></div>
-            </div>
-
-            {/* Top Info Bar */}
-            <div className="absolute top-2 left-12 right-12 flex justify-between items-center text-accent font-code text-xs">
-                <span>REC</span>
-                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-            </div>
-        </div>
-    </div>
-);
 
 export default function SnapPage() {
     const router = useRouter();
     const { toast } = useToast();
-    const videoRef = useRef<HTMLVideoElement>(null);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
-    const [isRequestingPermission, setIsRequestingPermission] = useState(false);
-    const [isCameraReady, setIsCameraReady] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [capturedImage, setCapturedImage] = useState<string | null>(null);
 
-    const getCameraPermission = useCallback(async () => {
-        setIsRequestingPermission(true);
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            console.error('Camera not supported on this browser.');
-            setHasCameraPermission(false);
-            toast({
-                variant: 'destructive',
-                title: 'Camera Not Supported',
-                description: 'Your browser does not support camera access.',
-            });
-            setIsRequestingPermission(false);
-            return;
-        }
+    const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
 
-        let stream;
-        try {
-            // First, try to get the environment-facing camera (for phones)
-            stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: 'environment' } 
-            });
-        } catch (error) {
-            console.warn('Could not get environment camera, trying default camera.', error);
-            // If that fails, fall back to any available video camera (for laptops, etc.)
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            } catch (fallbackError) {
-                console.error('Error accessing any camera:', fallbackError);
-                setHasCameraPermission(false);
-                toast({
-                    variant: 'destructive',
-                    title: 'Camera Access Denied',
-                    description: 'Please enable camera permissions in your browser settings.',
-                });
-                setIsRequestingPermission(false);
-                return;
-            }
-        }
-
-        // If we have a stream, set it up
-        if (stream) {
-            setHasCameraPermission(true);
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream;
-            }
-        }
-        setIsRequestingPermission(false);
-    }, [toast]);
-
-    useEffect(() => {
-        getCameraPermission();
-
-        return () => {
-            if (videoRef.current && videoRef.current.srcObject) {
-                const stream = videoRef.current.srcObject as MediaStream;
-                stream.getTracks().forEach(track => track.stop());
-            }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const result = e.target?.result as string;
+            setCapturedImage(result);
         };
-    }, []); // Note: Removed getCameraPermission from deps to run only once on mount.
+        reader.readAsDataURL(file);
 
-    const handleCapture = async () => {
-        if (!videoRef.current || !canvasRef.current || !videoRef.current.srcObject) {
-            toast({ variant: "destructive", title: "Camera not available."});
-            return;
-        };
-        
-        const video = videoRef.current;
-        if (video.readyState < video.HAVE_CURRENT_DATA || video.videoWidth === 0) {
-          toast({
-            variant: 'destructive',
-            title: 'Camera Error',
-            description: 'The camera is not ready yet. Please try again in a moment.',
-          });
-          return;
-        }
+        // Reset the input value to allow capturing the same file again if needed.
+        event.target.value = '';
+    };
+
+    const handleIdentify = async () => {
+        if (!capturedImage) return;
 
         setIsProcessing(true);
-        
-        // Add a small delay to allow mobile camera auto-focus to settle
-        await new Promise(resolve => setTimeout(resolve, 200));
-
-        const canvas = canvasRef.current;
-        const context = canvas.getContext('2d');
-        if (!context) {
-            setIsProcessing(false);
-            toast({ variant: "destructive", title: "Could not process image." });
-            return;
-        }
-
-        // Resize the image to a max dimension to avoid overly large uploads
-        const MAX_DIMENSION = 640;
-        const { videoWidth, videoHeight } = video;
-        const scale = Math.min(MAX_DIMENSION / videoWidth, MAX_DIMENSION / videoHeight, 1);
-        canvas.width = videoWidth * scale;
-        canvas.height = videoHeight * scale;
-
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const photoDataUri = canvas.toDataURL('image/jpeg', 0.85);
-
         try {
-            const result = await identifyPokemon({ photoDataUri });
+            const result = await identifyPokemon({ photoDataUri: capturedImage });
             if (result.pokemonName) {
                 router.push(`/pokemon/${result.pokemonName.toLowerCase()}`);
             } else {
                 toast({
                     variant: 'destructive',
                     title: 'Identification Failed',
-                    description: 'Could not identify a Pokémon. Please try again.',
+                    description: 'Could not identify a Pokémon. Please try again with a clearer image.',
                 });
+                // Allow user to try again without retaking photo
                 setIsProcessing(false);
             }
         } catch (error) {
@@ -202,6 +84,15 @@ export default function SnapPage() {
             });
             setIsProcessing(false);
         }
+    };
+
+    const handleRetake = () => {
+        setCapturedImage(null);
+        fileInputRef.current?.click();
+    };
+
+    const triggerFileSelect = () => {
+        fileInputRef.current?.click();
     };
     
     return (
@@ -231,66 +122,58 @@ export default function SnapPage() {
                     <p className="font-code text-xs text-green-400 uppercase">TARGETING: <span className="text-white">POKEMON</span></p>
                 </div>
 
-                <div className="relative w-full max-w-md aspect-[4/3] bg-black border-4 border-foreground overflow-hidden shadow-[inset_0_0_10px_black,0_0_10px_hsl(var(--primary)/0.5)]">
+                <div className="relative w-full max-w-md aspect-[4/3] bg-black border-4 border-foreground overflow-hidden shadow-[inset_0_0_10px_black,0_0_10px_hsl(var(--primary)/0.5)] flex items-center justify-center">
                     {isProcessing && <PokedexScanner />}
-                    {hasCameraPermission && !isCameraReady && !isProcessing && <CameraInitializing />}
-                    <video
-                        ref={videoRef}
-                        className="w-full h-full object-cover"
-                        autoPlay
-                        playsInline
-                        muted
-                        onCanPlay={() => setIsCameraReady(true)}
-                        onError={(e) => console.error('Video Error:', e)}
-                    />
-                    <CameraFrame />
-                    <canvas ref={canvasRef} className="hidden" />
-
-                    {hasCameraPermission === false && (
-                         <div className="absolute inset-0 bg-background flex flex-col gap-4 items-center justify-center p-4 text-center">
-                            <Alert variant="destructive" className="border-2 border-foreground">
-                                <AlertTitle className="font-headline">Camera Access Required</AlertTitle>
-                                <AlertDescription>
-                                    Please allow camera access to use this feature. You may need to change permissions in your browser settings.
-                                </AlertDescription>
-                            </Alert>
-                             <Button onClick={getCameraPermission} disabled={isRequestingPermission}>
-                                {isRequestingPermission ? (
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                ) : (
-                                    <RefreshCw className="mr-2 h-4 w-4" />
-                                )}
-                                Try Again
-                            </Button>
-                        </div>
+                    
+                    {capturedImage && !isProcessing && (
+                        <Image src={capturedImage} alt="Captured Pokémon" layout="fill" objectFit="contain" />
                     )}
+
+                    {!capturedImage && !isProcessing && <IdleView />}
+
+                    <input
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        ref={fileInputRef}
+                        onChange={handleFileSelect}
+                        className="hidden"
+                    />
                 </div>
                 <div className="mt-6 w-full max-w-md p-4 bg-foreground/20 border-t-4 border-foreground">
-                    <div className="flex items-center justify-center gap-6">
-                        <div className="w-8 h-8 bg-accent rounded-full border-2 border-foreground animate-pulse" />
-                        <button
-                            onClick={handleCapture}
-                            disabled={isProcessing || !isCameraReady || hasCameraPermission !== true}
-                            aria-label="Capture Pokémon"
-                            className="relative group h-20 w-20 rounded-full border-4 border-foreground bg-card overflow-hidden shadow-lg transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-black disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {/* Top red part */}
-                            <div className="absolute top-0 left-0 h-1/2 w-full bg-primary" />
-                            
-                            {/* Black band */}
-                            <div className="absolute top-1/2 left-0 w-full h-3.5 -translate-y-1/2 bg-foreground z-10" />
-
-                            {/* Center circle button */}
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card border-[3px] border-foreground z-20 flex items-center justify-center group-hover:border-accent transition-colors">
-                                {!isCameraReady && hasCameraPermission ? (
-                                    <Loader2 className="h-5 w-5 text-foreground animate-spin" />
-                                ) : (
-                                    <Camera className="h-5 w-5 text-foreground" />
-                                )}
-                            </div>
-                        </button>
-                        <div className="w-8 h-8 bg-accent rounded-full border-2 border-foreground animate-pulse" />
-                    </div>
+                    {capturedImage && !isProcessing ? (
+                        <div className="flex items-center justify-around gap-4">
+                             <Button onClick={handleRetake} variant="outline" className="border-gray-400 bg-gray-900 text-gray-50 hover:bg-gray-700">
+                                <RefreshCw className="mr-2 h-4 w-4" />
+                                Retake
+                            </Button>
+                            <Button onClick={handleIdentify}>
+                                <Sparkles className="mr-2 h-4 w-4" />
+                                Identify
+                            </Button>
+                        </div>
+                    ) : (
+                        <div className="flex items-center justify-center gap-6">
+                            <div className="w-8 h-8 bg-accent rounded-full border-2 border-foreground animate-pulse" />
+                            <button
+                                onClick={triggerFileSelect}
+                                disabled={isProcessing}
+                                aria-label="Open Camera"
+                                className="relative group h-20 w-20 rounded-full border-4 border-foreground bg-card overflow-hidden shadow-lg transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-black disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <div className="absolute top-0 left-0 h-1/2 w-full bg-primary" />
+                                <div className="absolute top-1/2 left-0 w-full h-3.5 -translate-y-1/2 bg-foreground z-10" />
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card border-[3px] border-foreground z-20 flex items-center justify-center group-hover:border-accent transition-colors">
+                                    {isProcessing ? (
+                                        <Loader2 className="h-5 w-5 text-foreground animate-spin" />
+                                    ) : (
+                                        <Upload className="h-5 w-5 text-foreground" />
+                                    )}
+                                </div>
+                            </button>
+                            <div className="w-8 h-8 bg-accent rounded-full border-2 border-foreground animate-pulse" />
+                        </div>
+                    )}
                 </div>
             </main>
             <footer className="text-center py-4 text-xs text-gray-400 font-code bg-black">
