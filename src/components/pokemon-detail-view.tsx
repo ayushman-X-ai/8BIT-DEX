@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, ReactElement, useRef, useEffect } from "react";
+import React, { useState, ReactElement, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Heart, Weight, Ruler, Volume2 } from "lucide-react";
@@ -83,14 +83,6 @@ export default function PokemonDetailView({ pokemon }: { pokemon: CombinedPokemo
     const audioRef = useRef<HTMLAudioElement>(null);
 
     const audioUrl = `https://play.pokemonshowdown.com/audio/cries/${pokemon.name.toLowerCase()}.mp3`;
-
-    useEffect(() => {
-        // Attempt to play the audio when the component mounts or the pokemon changes.
-        // This might be blocked by browser autoplay policies.
-        audioRef.current?.play().catch(error => {
-            console.warn("Audio autoplay was prevented:", error);
-        });
-    }, [pokemon.name]); // Re-run when the pokemon changes
 
     const flavorText = getEnglishFlavorText(pokemon.flavor_text_entries);
     const gender = getGenderRatio(pokemon.gender_rate);
