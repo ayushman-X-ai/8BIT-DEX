@@ -137,15 +137,19 @@ export default function PokemonDetailView({ pokemon }: { pokemon: CombinedPokemo
                                 sizes="(max-width: 768px) 90vw, 280px"
                                 data-ai-hint="pokemon character"
                             />
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => audioRef.current?.play()}
+                                aria-label="Play Pokémon cry"
+                                className="absolute top-2 left-2 z-10 bg-black/20 text-white hover:bg-black/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            >
+                                <Volume2 className="h-5 w-5" />
+                            </Button>
                             <span className="absolute bottom-1 right-2 text-lg font-bold text-black/50">{formatPokemonId(pokemon.id)}</span>
                         </div>
                         <div className="flex-grow text-center md:text-left">
-                            <div className="flex items-center justify-center md:justify-start gap-2">
-                                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-headline uppercase tracking-wide text-foreground">{capitalize(pokemon.name)}</h1>
-                                <Button variant="ghost" size="icon" onClick={() => audioRef.current?.play()} aria-label="Play Pokémon cry">
-                                    <Volume2 className="h-6 w-6 text-muted-foreground transition-colors hover:text-accent" />
-                                </Button>
-                            </div>
+                            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-headline uppercase tracking-wide text-foreground">{capitalize(pokemon.name)}</h1>
                             <p className="mt-2 text-muted-foreground leading-relaxed max-w-prose mx-auto md:mx-0 text-xs">{flavorText}</p>
                             <div className="flex justify-center md:justify-start gap-2 mt-4">
                                 {pokemon.types.map(({ type }) => (
