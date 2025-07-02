@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
-import { ArrowLeft, RadioTower, Loader2, Camera, UploadCloud, RefreshCw } from 'lucide-react';
+import { ArrowLeft, RadioTower, Loader2, Camera, VideoOff } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -28,7 +27,7 @@ const PokedexScanner = () => (
 
 const resizeImage = (dataUri: string, maxWidth: number, maxHeight: number, quality: number): Promise<string> => {
     return new Promise((resolve, reject) => {
-        const img = new Image();
+        const img = new window.Image();
         img.onload = () => {
             const canvas = document.createElement('canvas');
             let { width, height } = img;
@@ -62,29 +61,67 @@ const resizeImage = (dataUri: string, maxWidth: number, maxHeight: number, quali
 export default function SnapPage() {
     const router = useRouter();
     const { toast } = useToast();
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
 
-    const [capturedImage, setCapturedImage] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+
+    useEffect(() => {
+        const getCameraPermission = async () => {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: 'environment' } 
+            });
+            setHasCameraPermission(true);
     
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                setCapturedImage(e.target?.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
-        event.target.value = '';
-    };
+            if (videoRef.current) {
+              videoRef.current.srcObject = stream;
+            }
+          } catch (error) {
+            console.error('Error accessing camera:', error);
+            setHasCameraPermission(false);
+            toast({
+              variant: 'destructive',
+              title: 'Camera Access Denied',
+              description: 'Please enable camera permissions in your browser settings.',
+            });
+          }
+        };
+    
+        getCameraPermission();
+    }, [toast]);
 
     const handleIdentify = useCallback(async () => {
-        if (!capturedImage) return;
-
+        if (!videoRef.current) return;
+        
         setIsProcessing(true);
+        
+        const canvas = canvasRef.current || document.createElement('canvas');
+        if (!canvasRef.current) {
+            canvasRef.current = canvas;
+        }
+
+        const video = videoRef.current;
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            toast({
+                variant: 'destructive',
+                title: 'Canvas Error',
+                description: 'Could not process the video frame.',
+            });
+            setIsProcessing(false);
+            return;
+        }
+
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageDataUri = canvas.toDataURL('image/jpeg', 0.9);
+
         try {
-            const resizedDataUri = await resizeImage(capturedImage, 512, 512, 0.7);
+            const resizedDataUri = await resizeImage(imageDataUri, 512, 512, 0.7);
             const result = await identifyPokemon({ photoDataUri: resizedDataUri });
             if (result.pokemonName) {
                 router.push(`/pokemon/${result.pokemonName.toLowerCase()}`);
@@ -105,16 +142,7 @@ export default function SnapPage() {
             });
             setIsProcessing(false);
         }
-    }, [capturedImage, router, toast]);
-
-    const handleRetake = () => {
-        setCapturedImage(null);
-        fileInputRef.current?.click();
-    };
-
-    const triggerFileInput = () => {
-        fileInputRef.current?.click();
-    };
+    }, [router, toast]);
     
     return (
         <div className="bg-black min-h-screen font-body flex flex-col">
@@ -139,64 +167,43 @@ export default function SnapPage() {
 
             <main className="flex-grow flex flex-col items-center justify-center p-4">
                 <div className="w-full max-w-md space-y-2 text-center mb-4">
-                    <p className="font-code text-xs text-green-400 uppercase">SYSTEM STATUS: <span className="text-white">READY</span></p>
+                    <p className="font-code text-xs text-green-400 uppercase">SYSTEM STATUS: <span className="text-white">{hasCameraPermission === null ? 'INITIALIZING' : hasCameraPermission ? 'READY' : 'ERROR'}</span></p>
                     <p className="font-code text-xs text-green-400 uppercase">TARGETING: <span className="text-white">POKEMON</span></p>
                 </div>
-
+                
                 <div className="relative w-full max-w-md aspect-[4/3] bg-black border-4 border-foreground overflow-hidden shadow-[inset_0_0_10px_black,0_0_10px_hsl(var(--primary)/0.5)] flex items-center justify-center">
                     {isProcessing && <PokedexScanner />}
-                    {capturedImage ? (
-                        <Image src={capturedImage} alt="Captured Pokémon" layout="fill" objectFit="contain" />
-                    ) : (
-                        <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-4">
-                            <UploadCloud className="w-16 h-16 mb-4 text-gray-500" />
-                            <h3 className="font-headline text-lg text-white">Capture Image</h3>
-                            <p className="text-xs mt-2 text-gray-400">Tap the Pokéball to open your camera and snap a picture of a Pokémon.</p>
+                    <video ref={videoRef} className="w-full h-full object-cover" autoPlay playsInline muted />
+                    {hasCameraPermission === false && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 text-center p-4">
+                            <VideoOff className="w-12 h-12 text-destructive mb-4"/>
+                            <h3 className="font-headline text-lg text-white">Camera Access Denied</h3>
+                            <p className="text-xs mt-2 text-gray-400">Please enable camera permissions in your browser settings to use the scanner.</p>
                         </div>
                     )}
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileChange}
-                        accept="image/*"
-                        capture="environment"
-                        className="hidden"
-                    />
                 </div>
+
                 <div className="mt-6 w-full max-w-md p-4 bg-foreground/20 border-t-4 border-foreground">
-                    {!capturedImage ? (
-                         <div className="flex items-center justify-center gap-6">
-                            <div className="w-8 h-8 bg-yellow-400 rounded-full border-2 border-foreground animate-pulse" />
-                            <button
-                                onClick={triggerFileInput}
-                                disabled={isProcessing}
-                                aria-label="Capture Pokémon"
-                                className="relative group h-20 w-20 rounded-full border-4 border-foreground bg-card overflow-hidden shadow-lg transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-black disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <div className="absolute top-0 left-0 h-1/2 w-full bg-primary" />
-                                <div className="absolute top-1/2 left-0 w-full h-3.5 -translate-y-1/2 bg-foreground z-10" />
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card border-[3px] border-foreground z-20 flex items-center justify-center group-hover:border-accent transition-colors">
-                                    <Camera className="h-5 w-5 text-foreground" />
-                                </div>
-                            </button>
-                            <div className="w-8 h-8 bg-yellow-400 rounded-full border-2 border-foreground animate-pulse" />
-                        </div>
-                    ) : (
-                        <div className="flex items-center justify-around">
-                             <Button onClick={handleRetake} variant="outline" className="border-2 border-gray-400 bg-gray-900 text-gray-50 hover:bg-gray-700 hover:text-white">
-                                <RefreshCw className="mr-2" />
-                                Retake
-                            </Button>
-                             <Button onClick={handleIdentify} disabled={isProcessing}>
+                    <div className="flex items-center justify-center gap-6">
+                        <div className="w-8 h-8 bg-yellow-400 rounded-full border-2 border-foreground animate-pulse" />
+                        <button
+                            onClick={handleIdentify}
+                            disabled={isProcessing || !hasCameraPermission}
+                            aria-label="Capture Pokémon"
+                            className="relative group h-20 w-20 rounded-full border-4 border-foreground bg-card overflow-hidden shadow-lg transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-black disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <div className="absolute top-0 left-0 h-1/2 w-full bg-primary" />
+                            <div className="absolute top-1/2 left-0 w-full h-3.5 -translate-y-1/2 bg-foreground z-10" />
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card border-[3px] border-foreground z-20 flex items-center justify-center group-hover:border-accent transition-colors">
                                 {isProcessing ? (
-                                    <Loader2 className="mr-2 animate-spin" />
+                                    <Loader2 className="h-5 w-5 text-foreground animate-spin" />
                                 ) : (
-                                    <RadioTower className="mr-2" />
+                                    <Camera className="h-5 w-5 text-foreground" />
                                 )}
-                                Identify
-                            </Button>
-                        </div>
-                    )}
+                            </div>
+                        </button>
+                        <div className="w-8 h-8 bg-yellow-400 rounded-full border-2 border-foreground animate-pulse" />
+                    </div>
                 </div>
             </main>
             <footer className="text-center py-4 text-xs text-gray-400 font-code bg-black">
