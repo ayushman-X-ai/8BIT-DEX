@@ -4,7 +4,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Resizer from 'react-image-file-resizer';
-import { ArrowLeft, RadioTower, Loader2, Camera, Send } from 'lucide-react';
+import { ArrowLeft, RadioTower, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { identifyPokemon } from '@/ai/flows/identify-pokemon-flow';
@@ -78,20 +78,24 @@ export default function SnapPage() {
         facingMode: "environment"
     };
 
-    const capture = useCallback(() => {
-        const image = webcamRef.current?.getScreenshot();
-        if (image) {
-            setImageSrc(image);
-        }
-    }, [webcamRef]);
+    const captureAndIdentify = useCallback(async () => {
+        if (isProcessing) return;
 
-    const handleIdentify = async () => {
-        if (!imageSrc || isProcessing) return;
-        
+        const imageData = webcamRef.current?.getScreenshot();
+        if (!imageData) {
+            toast({
+                variant: 'destructive',
+                title: 'Capture Failed',
+                description: 'Could not capture an image from the camera.',
+            });
+            return;
+        }
+
         setIsProcessing(true);
+        setImageSrc(imageData);
         
         try {
-            const imageBlob = dataURIToBlob(imageSrc);
+            const imageBlob = dataURIToBlob(imageData);
             const resizedDataUri = await resizeImageFile(imageBlob);
             const result = await identifyPokemon({ photoDataUri: resizedDataUri });
 
@@ -116,7 +120,7 @@ export default function SnapPage() {
             setIsProcessing(false);
             setImageSrc(null); // Reset view to camera on error
         }
-    };
+    }, [isProcessing, router, toast, webcamRef]);
     
     return (
         <div className="bg-black min-h-screen font-body flex flex-col">
@@ -141,7 +145,7 @@ export default function SnapPage() {
 
             <main className="flex-grow flex flex-col items-center justify-center p-4">
                 <div className="w-full max-w-md space-y-2 text-center mb-4">
-                    <p className="font-code text-xs text-green-400 uppercase">SYSTEM STATUS: <span className="text-white">READY</span></p>
+                    <p className="font-code text-xs text-green-400 uppercase">SYSTEM STATUS: <span className="text-white">{isProcessing ? 'PROCESSING' : 'READY'}</span></p>
                     <p className="font-code text-xs text-green-400 uppercase">TARGETING: <span className="text-white">{imageSrc ? 'CAPTURED' : 'LIVE'}</span></p>
                 </div>
                 
@@ -149,20 +153,7 @@ export default function SnapPage() {
                     {isProcessing && <PokedexScanner />}
                     
                     {imageSrc ? (
-                         <button 
-                             onClick={handleIdentify} 
-                             disabled={isProcessing}
-                             className="w-full h-full bg-black cursor-pointer group disabled:cursor-wait"
-                             aria-label="Tap to identify the captured Pokémon"
-                         >
-                            <Image src={imageSrc} alt="Pokémon Preview" fill className="object-contain" />
-                            {!isProcessing && (
-                                <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                    <Send className="w-10 h-10 text-white" />
-                                    <p className="mt-2 text-sm font-bold text-white uppercase font-headline">Identify</p>
-                                </div>
-                            )}
-                         </button>
+                         <Image src={imageSrc} alt="Pokémon Preview" fill className="object-contain" />
                     ) : (
                         <Webcam
                             audio={false}
@@ -183,24 +174,22 @@ export default function SnapPage() {
                 </div>
 
                 <div className="mt-6 w-full max-w-md p-4 bg-foreground/20 border-t-4 border-foreground">
-                    {!imageSrc && (
-                        <div className="flex items-center justify-center gap-6">
-                            <div className="w-8 h-8 bg-yellow-400 rounded-full border-2 border-foreground animate-pulse" />
-                            <button
-                                onClick={capture}
-                                disabled={isProcessing}
-                                aria-label="Capture Pokémon"
-                                className="relative group h-20 w-20 rounded-full border-4 border-foreground bg-card overflow-hidden shadow-lg transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-black disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <div className="absolute top-0 left-0 h-1/2 w-full bg-primary" />
-                                <div className="absolute top-1/2 left-0 w-full h-3.5 -translate-y-1/2 bg-foreground z-10" />
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card border-[3px] border-foreground z-20 flex items-center justify-center group-hover:border-accent transition-colors">
-                                    <Camera className="h-5 w-5 text-foreground" />
-                                </div>
-                            </button>
-                            <div className="w-8 h-8 bg-yellow-400 rounded-full border-2 border-foreground animate-pulse" />
-                        </div>
-                    )}
+                    <div className="flex items-center justify-center gap-6">
+                        <div className="w-8 h-8 bg-yellow-400 rounded-full border-2 border-foreground animate-pulse" />
+                        <button
+                            onClick={captureAndIdentify}
+                            disabled={isProcessing}
+                            aria-label="Capture and Identify Pokémon"
+                            className="relative group h-20 w-20 rounded-full border-4 border-foreground bg-card overflow-hidden shadow-lg transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-black disabled:opacity-50 disabled:cursor-wait"
+                        >
+                            <div className="absolute top-0 left-0 h-1/2 w-full bg-primary" />
+                            <div className="absolute top-1/2 left-0 w-full h-3.5 -translate-y-1/2 bg-foreground z-10" />
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card border-[3px] border-foreground z-20 flex items-center justify-center group-hover:border-accent transition-colors">
+                                <Camera className="h-5 w-5 text-foreground" />
+                            </div>
+                        </button>
+                        <div className="w-8 h-8 bg-yellow-400 rounded-full border-2 border-foreground animate-pulse" />
+                    </div>
                 </div>
             </main>
             <footer className="text-center py-4 text-xs text-gray-400 font-code bg-black">
