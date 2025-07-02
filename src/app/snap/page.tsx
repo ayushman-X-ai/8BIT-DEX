@@ -12,6 +12,7 @@ import Webcam from 'react-webcam';
 import Image from 'next/image';
 import { capitalize } from '@/lib/pokemon-utils';
 import { textToSpeech } from '@/ai/flows/text-to-speech-flow';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const PokedexScanner = () => (
     <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center z-20 overflow-hidden">
@@ -70,6 +71,7 @@ export default function SnapPage() {
     const router = useRouter();
     const { toast } = useToast();
     const webcamRef = useRef<Webcam>(null);
+    const isMobile = useIsMobile();
     
     const [isProcessing, setIsProcessing] = useState(false);
     const [imageSrc, setImageSrc] = useState<string | null>(null);
@@ -99,7 +101,7 @@ export default function SnapPage() {
         try {
             const imageBlob = dataURIToBlob(imageData);
             const resizedDataUri = await resizeImageFile(imageBlob);
-            const result = await identifyPokemon({ photoDataUri: resizedDataUri });
+            const result = await identifyPokemon({ photoDataUri: resizedDataUri, isMobile });
 
             if (result.pokemonName) {
                 try {
@@ -132,7 +134,7 @@ export default function SnapPage() {
             setIsProcessing(false);
             setImageSrc(null); // Reset view to camera on error
         }
-    }, [isProcessing, router, toast, webcamRef]);
+    }, [isProcessing, router, toast, webcamRef, isMobile]);
     
     return (
         <div className="bg-black min-h-screen font-body flex flex-col">
@@ -164,7 +166,7 @@ export default function SnapPage() {
                 <div className="relative w-full max-w-md aspect-[4/3] bg-black border-4 border-foreground overflow-hidden shadow-[inset_0_0_10px_black,0_0_10px_hsl(var(--primary)/0.5)] flex items-center justify-center">
                     {isProcessing && <PokedexScanner />}
                     
-                    {imageSrc ? (
+                    {imageSrc && !isProcessing ? (
                          <Image src={imageSrc} alt="Pokémon Preview" fill className="object-contain" />
                     ) : (
                         <Webcam
