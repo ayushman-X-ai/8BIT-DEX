@@ -7,8 +7,18 @@
  * - IdentifyPokemonOutput - The return type for the identifyPokemon function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { genkit } from 'genkit';
+import { googleAI } from '@genkit-ai/googleai';
+import { z } from 'genkit';
+
+const scannerAi = genkit({
+  plugins: [
+    googleAI({
+      apiKey: 'AIzaSyCDnYp2MO37u1FSaN7UXGspLRxYkc77yMk',
+    }),
+  ],
+  model: 'googleai/gemini-2.0-flash',
+});
 
 const IdentifyPokemonInputSchema = z.object({
   photoDataUri: z
@@ -28,7 +38,7 @@ export async function identifyPokemon(input: IdentifyPokemonInput): Promise<Iden
   return identifyPokemonFlow(input);
 }
 
-const prompt = ai.definePrompt({
+const prompt = scannerAi.definePrompt({
   name: 'identifyPokemonPrompt',
   input: {schema: IdentifyPokemonInputSchema},
   output: {schema: IdentifyPokemonOutputSchema},
@@ -41,7 +51,7 @@ If the image does not contain a Pokémon, or if you cannot confidently identify 
 Photo: {{media url=photoDataUri}}`,
 });
 
-const identifyPokemonFlow = ai.defineFlow(
+const identifyPokemonFlow = scannerAi.defineFlow(
   {
     name: 'identifyPokemonFlow',
     inputSchema: IdentifyPokemonInputSchema,
