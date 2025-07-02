@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import * as tmImage from '@teachablemachine/image';
 import Resizer from 'react-image-file-resizer';
 import { ArrowLeft, RadioTower, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -76,43 +75,12 @@ export default function SnapPage() {
     
     const [isProcessing, setIsProcessing] = useState(false);
     const [imageSrc, setImageSrc] = useState<string | null>(null);
-    const [model, setModel] = useState<tmImage.CustomMobileNet | null>(null);
-    const [isModelLoading, setIsModelLoading] = useState(true);
 
     const videoConstraints = {
         width: 1280,
         height: 720,
         facingMode: "environment"
     };
-
-    useEffect(() => {
-        // We only load the model on mobile devices.
-        if (isMobile) {
-            const loadModel = async () => {
-                setIsModelLoading(true);
-                try {
-                    const modelURL = '/model/model.json';
-                    const metadataURL = '/model/metadata.json';
-                    const loadedModel = await tmImage.load(modelURL, metadataURL);
-                    setModel(loadedModel);
-                } catch (error) {
-                    console.error("Failed to load the model:", error);
-                    toast({
-                        variant: 'destructive',
-                        title: 'On-Device Model Not Found',
-                        description: 'Please replace the placeholder files in public/model/ with your own trained model from Teachable Machine.',
-                        duration: 10000,
-                    });
-                } finally {
-                    setIsModelLoading(false);
-                }
-            };
-            loadModel();
-        } else {
-            // On desktop, we don't need to load the on-device model.
-            setIsModelLoading(false);
-        }
-    }, [isMobile, toast]);
 
     const captureAndIdentify = useCallback(async () => {
         if (isProcessing) return;
@@ -153,51 +121,27 @@ export default function SnapPage() {
             setImageSrc(null); // Reset view to camera on failure
         };
 
-        if (isMobile) {
-            if (!model) {
-                handleFailure('The on-device scanner is not ready. Please try again.');
-                return;
-            }
-            try {
-                const img = document.createElement('img');
-                img.src = imageData;
-                img.onload = async () => {
-                    const predictions = await model.predict(img);
-                    const bestPrediction = predictions.reduce((prev, current) => (prev.probability > current.probability) ? prev : current);
-                    
-                    if (bestPrediction && bestPrediction.probability > 0.7) { // Confidence threshold
-                        await handleSuccess(bestPrediction.className);
-                    } else {
-                        handleFailure('Could not identify a Pokémon. Please try again.');
-                    }
-                };
-                img.onerror = () => handleFailure('Could not process the captured image.');
-            } catch (error) {
-                console.error('On-device prediction error:', error);
-                handleFailure('An error occurred with the on-device scanner.');
-            }
-        } else {
-            try {
-                const imageBlob = dataURIToBlob(imageData);
-                const resizedDataUri = await resizeImageFile(imageBlob);
-                const result = await identifyPokemon({ photoDataUri: resizedDataUri });
+        try {
+            const imageBlob = dataURIToBlob(imageData);
+            const resizedDataUri = await resizeImageFile(imageBlob);
+            const result = await identifyPokemon({
+                photoDataUri: resizedDataUri,
+                isMobile: !!isMobile
+            });
 
-                if (result.pokemonName) {
-                    await handleSuccess(result.pokemonName);
-                } else {
-                    handleFailure('Could not identify a Pokémon. Please try again.');
-                }
-            } catch (error) {
-                console.error('AI identification error:', error);
-                handleFailure('An error occurred while trying to identify the Pokémon.');
+            if (result.pokemonName) {
+                await handleSuccess(result.pokemonName);
+            } else {
+                handleFailure('Could not identify a Pokémon. Please try again.');
             }
+        } catch (error) {
+            console.error('AI identification error:', error);
+            handleFailure('An error occurred while trying to identify the Pokémon.');
         }
-    }, [isProcessing, router, toast, webcamRef, isMobile, model]);
+    }, [isProcessing, router, toast, webcamRef, isMobile]);
     
     const getSystemStatus = () => {
-        if (isModelLoading) return 'LOADING MODEL...';
         if (isProcessing) return 'PROCESSING';
-        if (isMobile && !model) return 'MODEL FAILED';
         return 'READY';
     };
 
@@ -257,7 +201,7 @@ export default function SnapPage() {
                         <div className="w-8 h-8 bg-yellow-400 rounded-full border-2 border-foreground animate-pulse" />
                         <button
                             onClick={captureAndIdentify}
-                            disabled={isProcessing || isModelLoading || (isMobile && !model)}
+                            disabled={isProcessing}
                             aria-label="Capture and Identify Pokémon"
                             className="relative group h-20 w-20 rounded-full border-4 border-foreground bg-card overflow-hidden shadow-lg transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-black disabled:opacity-50 disabled:cursor-wait"
                         >
