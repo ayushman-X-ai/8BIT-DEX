@@ -1,16 +1,15 @@
 'use client';
 
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Resizer from 'react-image-file-resizer';
-import { ArrowLeft, RadioTower, Loader2, Camera, RefreshCw, Send, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, RadioTower, Loader2, Camera, RefreshCw, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { identifyPokemon } from '@/ai/flows/identify-pokemon-flow';
+import Webcam from 'react-webcam';
 import Image from 'next/image';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-
 
 const PokedexScanner = () => (
     <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center z-20 overflow-hidden">
@@ -54,55 +53,23 @@ const resizeDataUri = (dataUri: string): Promise<string> => {
 export default function SnapPage() {
     const router = useRouter();
     const { toast } = useToast();
-    const videoRef = useRef<HTMLVideoElement>(null);
+    const webcamRef = useRef<Webcam>(null);
     
     const [isProcessing, setIsProcessing] = useState(false);
     const [imageSrc, setImageSrc] = useState<string | null>(null);
-    const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
 
-    useEffect(() => {
-        const getCameraPermission = async () => {
-          try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-            setHasCameraPermission(true);
-    
-            if (videoRef.current) {
-              videoRef.current.srcObject = stream;
-            }
-          } catch (error) {
-            console.error('Error accessing camera:', error);
-            setHasCameraPermission(false);
-            toast({
-              variant: 'destructive',
-              title: 'Camera Access Denied',
-              description: 'Please enable camera permissions in your browser settings.',
-            });
-          }
-        };
-    
-        getCameraPermission();
-
-        return () => {
-            if (videoRef.current && videoRef.current.srcObject) {
-                const stream = videoRef.current.srcObject as MediaStream;
-                stream.getTracks().forEach(track => track.stop());
-            }
-        }
-    }, [toast]);
+    const videoConstraints = {
+        width: 1280,
+        height: 720,
+        facingMode: "environment"
+    };
 
     const capture = useCallback(() => {
-        if (!videoRef.current) return;
-        const video = videoRef.current;
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const context = canvas.getContext('2d');
-        if (context) {
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const dataUri = canvas.toDataURL('image/jpeg');
-            setImageSrc(dataUri);
+        const image = webcamRef.current?.getScreenshot();
+        if (image) {
+            setImageSrc(image);
         }
-    }, [videoRef]);
+    }, [webcamRef]);
 
     const handleRetake = () => {
         setImageSrc(null);
@@ -161,11 +128,7 @@ export default function SnapPage() {
 
             <main className="flex-grow flex flex-col items-center justify-center p-4">
                 <div className="w-full max-w-md space-y-2 text-center mb-4">
-                    <p className="font-code text-xs text-green-400 uppercase">SYSTEM STATUS: <span className="text-white">
-                        {hasCameraPermission === null && "INITIALIZING..."}
-                        {hasCameraPermission === true && "READY"}
-                        {hasCameraPermission === false && "NO CAMERA"}
-                    </span></p>
+                    <p className="font-code text-xs text-green-400 uppercase">SYSTEM STATUS: <span className="text-white">READY</span></p>
                     <p className="font-code text-xs text-green-400 uppercase">TARGETING: <span className="text-white">POKEMON</span></p>
                 </div>
                 
@@ -175,19 +138,21 @@ export default function SnapPage() {
                     {imageSrc ? (
                          <Image src={imageSrc} alt="Pokémon Preview" fill className="object-contain" />
                     ) : (
-                        hasCameraPermission === false ? (
-                            <div className="p-4">
-                                <Alert variant="destructive">
-                                    <AlertTriangle className="h-4 w-4" />
-                                    <AlertTitle>Camera Access Required</AlertTitle>
-                                    <AlertDescription>
-                                        Please allow camera access in your browser settings to use the scanner.
-                                    </AlertDescription>
-                                </Alert>
-                            </div>
-                        ) : (
-                           <video ref={videoRef} className="w-full h-full object-cover" autoPlay playsInline muted />
-                        )
+                        <Webcam
+                            audio={false}
+                            ref={webcamRef}
+                            screenshotFormat="image/jpeg"
+                            videoConstraints={videoConstraints}
+                            className="w-full h-full object-cover"
+                            onUserMediaError={(err) => {
+                                console.error(err);
+                                toast({
+                                    variant: 'destructive',
+                                    title: 'Camera Error',
+                                    description: 'Could not access the camera. Please check permissions.',
+                                })
+                            }}
+                        />
                     )}
                 </div>
 
@@ -207,7 +172,7 @@ export default function SnapPage() {
                             <div className="w-8 h-8 bg-yellow-400 rounded-full border-2 border-foreground animate-pulse" />
                             <button
                                 onClick={capture}
-                                disabled={isProcessing || !hasCameraPermission}
+                                disabled={isProcessing}
                                 aria-label="Capture Pokémon"
                                 className="relative group h-20 w-20 rounded-full border-4 border-foreground bg-card overflow-hidden shadow-lg transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-black disabled:opacity-50 disabled:cursor-not-allowed"
                             >
