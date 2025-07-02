@@ -206,7 +206,7 @@ export default function SnapPage() {
     
     return (
         <div className="bg-black min-h-screen font-body flex flex-col">
-            <header className="py-4 px-4 md:px-8 border-b-4 border-foreground sticky top-0 z-10 bg-black">
+            <header className="py-4 px-4 md:px-8 border-b-4 border-gray-700 sticky top-0 z-10 bg-black">
               <div className="container mx-auto grid grid-cols-3 items-center gap-4">
                   <div className="flex justify-start">
                     <Link href="/" aria-label="Back to 8BitDex">
@@ -216,11 +216,11 @@ export default function SnapPage() {
                         </Button>
                     </Link>
                   </div>
-                  <h1 className="text-xs sm:text-base font-bold font-headline text-foreground uppercase tracking-tighter sm:tracking-widest text-center">
+                  <h1 className="text-xs sm:text-base font-bold font-headline text-gray-50 uppercase tracking-tighter sm:tracking-widest text-center">
                       8BIT-SCANNER
                   </h1>
                   <div className="flex justify-end">
-                    <RadioTower className="text-foreground/50" />
+                    <RadioTower className="text-gray-400" />
                   </div>
               </div>
             </header>
