@@ -1,9 +1,9 @@
 {
-  "labels": [
-    "bulbasaur",
-    "charmander",
-    "squirtle",
-    "pikachu"
-  ],
-  "imageSize": 224
+    "note": "Replace this file with the metadata.json file you downloaded from Teachable Machine. The 'labels' should be the lowercase names of your Pokémon.",
+    "labels": [
+        "bulbasaur",
+        "charmander",
+        "squirtle"
+    ],
+    "placeholder": true
 }
