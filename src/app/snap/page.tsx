@@ -159,6 +159,9 @@ export default function SnapPage() {
         }
 
         setIsProcessing(true);
+        
+        // Add a small delay to allow mobile camera auto-focus to settle
+        await new Promise(resolve => setTimeout(resolve, 200));
 
         const canvas = canvasRef.current;
         const context = canvas.getContext('2d');
