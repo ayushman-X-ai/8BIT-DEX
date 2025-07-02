@@ -27,12 +27,12 @@ const PokedexScanner = () => (
     </div>
 );
 
-// Resizes a base64 Data URI and returns a new base64 Data URI
-const resizeDataUri = (dataUri: string): Promise<string> => {
+// Resizes an image file (Blob) and returns a new base64 Data URI
+const resizeImageFile = (file: Blob): Promise<string> => {
     return new Promise((resolve, reject) => {
         try {
             Resizer.imageFileResizer(
-                dataUri, // Is the base64 string
+                file,     // The file to resize
                 512,      // Max width
                 512,      // Max height
                 'JPEG',   // Format
@@ -81,7 +81,8 @@ export default function SnapPage() {
         setIsProcessing(true);
         
         try {
-            const resizedDataUri = await resizeDataUri(imageSrc);
+            const imageBlob = await fetch(imageSrc).then(res => res.blob());
+            const resizedDataUri = await resizeImageFile(imageBlob);
             const result = await identifyPokemon({ photoDataUri: resizedDataUri });
 
             if (result.pokemonName) {
