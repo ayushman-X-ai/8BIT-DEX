@@ -14,7 +14,7 @@ import { z } from 'genkit';
 const scannerAi = genkit({
   plugins: [
     googleAI({
-      apiKey: 'AIzaSyCDnYp2MO37u1FSaN7UXGspLRxYkc77yMk',
+      apiKey: process.env.SCANNER_API_KEY,
     }),
   ],
   model: 'googleai/gemini-2.0-flash',
