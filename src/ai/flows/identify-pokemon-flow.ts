@@ -7,9 +7,8 @@
  * - IdentifyPokemonOutput - The return type for the identifyPokemon function.
  */
 
-import { genkit } from 'genkit';
-import { googleAI } from '@genkit-ai/googleai';
 import { z } from 'genkit';
+import { googleAI } from '@genkit-ai/googleai';
 import { ai as defaultAi } from '@/ai/genkit';
 
 const IdentifyPokemonInputSchema = z.object({
@@ -39,25 +38,20 @@ If the image does not contain a Pokémon, or if you cannot confidently identify 
 
 Photo: {{media url=photoDataUri}}`;
 
-// Mobile-specific AI instance using the dedicated scanner key
-const scannerAi = genkit({
-  plugins: [
-    googleAI({
-      apiKey: process.env.SCANNER_API_KEY,
-    }),
-  ],
-  model: 'googleai/gemini-2.0-flash',
-});
+// Mobile-specific model instance using the dedicated scanner key.
+// We use gemini-2.0-flash as it is suitable for vision tasks.
+const mobileScannerModel = googleAI({ apiKey: process.env.SCANNER_API_KEY }).model('gemini-2.0-flash');
 
-// Prompt for mobile devices, using the scanner-specific AI
-const mobilePrompt = scannerAi.definePrompt({
+// Prompt for mobile devices, using the scanner-specific model
+const mobilePrompt = defaultAi.definePrompt({
   name: 'identifyPokemonPromptMobile',
+  model: mobileScannerModel,
   input: {schema: IdentifyPokemonInputSchema},
   output: {schema: IdentifyPokemonOutputSchema},
   prompt: PROMPT_TEXT,
 });
 
-// Prompt for non-mobile devices, using the default AI
+// Prompt for non-mobile devices, using the default AI model
 const desktopPrompt = defaultAi.definePrompt({
   name: 'identifyPokemonPromptDesktop',
   input: {schema: IdentifyPokemonInputSchema},
