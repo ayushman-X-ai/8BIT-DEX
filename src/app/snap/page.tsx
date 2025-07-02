@@ -10,9 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import { identifyPokemon } from '@/ai/flows/identify-pokemon-flow';
 import Webcam from 'react-webcam';
 import Image from 'next/image';
-import { getEnglishFlavorText } from '@/lib/pokemon-utils';
+import { capitalize } from '@/lib/pokemon-utils';
 import { textToSpeech } from '@/ai/flows/text-to-speech-flow';
-import type { PokemonSpecies } from '@/types/pokemon';
 
 const PokedexScanner = () => (
     <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center z-20 overflow-hidden">
@@ -104,17 +103,10 @@ export default function SnapPage() {
 
             if (result.pokemonName) {
                 try {
-                    const speciesRes = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${result.pokemonName.toLowerCase()}`);
-                    if (speciesRes.ok) {
-                        const speciesData: PokemonSpecies = await speciesRes.json();
-                        const flavorText = getEnglishFlavorText(speciesData.flavor_text_entries);
-
-                        if (flavorText) {
-                            const ttsResult = await textToSpeech(flavorText);
-                            if (ttsResult.media) {
-                                sessionStorage.setItem('ttsAudioData', ttsResult.media);
-                            }
-                        }
+                    const pokemonNameToSpeak = capitalize(result.pokemonName);
+                    const ttsResult = await textToSpeech(pokemonNameToSpeak);
+                    if (ttsResult.media) {
+                        sessionStorage.setItem('ttsAudioData', ttsResult.media);
                     }
                 } catch (ttsError) {
                     console.error("Failed to generate or store TTS audio:", ttsError);
