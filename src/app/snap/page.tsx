@@ -147,7 +147,7 @@ export default function SnapPage() {
                     </Link>
                   </div>
                   <h1 className="text-xs sm:text-base font-bold font-headline text-white uppercase tracking-tighter sm:tracking-widest text-center">
-                      8BIT-SCANNER
+                      8BIT SCANNER
                   </h1>
                   <div className="flex justify-end">
                     <RadioTower className="text-white" />
