@@ -214,7 +214,7 @@ export default function SnapPage() {
                           Back
                       </Button>
                   </Link>
-                  <h1 className="text-base sm:text-lg font-bold font-headline text-background uppercase tracking-wider text-center">
+                  <h1 className="text-sm sm:text-lg font-bold font-headline text-background uppercase tracking-normal sm:tracking-wider text-center">
                       8BIT-SCANNER
                   </h1>
                   <div className="flex justify-end">
