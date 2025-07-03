@@ -62,16 +62,28 @@ export default function SnapPage() {
     const videoConstraints = { width: 1280, height: 720, facingMode: "environment" };
 
     const handleSuccess = async (pokemonName: string) => {
+         try {
+            const pokemonNameToSpeak = capitalize(pokemonName);
+            const ttsResult = await textToSpeech(pokemonNameToSpeak);
+            if (ttsResult.media) {
+                sessionStorage.setItem('ttsAudioData', ttsResult.media);
+            }
+        } catch (ttsError) {
+            console.error("Failed to generate or store TTS audio:", ttsError);
+        }
+
         try {
-           const pokemonNameToSpeak = capitalize(pokemonName);
-           const ttsResult = await textToSpeech(pokemonNameToSpeak);
-           if (ttsResult.media) {
-               sessionStorage.setItem('ttsAudioData', ttsResult.media);
-           }
-       } catch (ttsError) {
-           console.error("Failed to generate or store TTS audio:", ttsError);
-       }
-       router.push(`/pokemon/${pokemonName.toLowerCase()}`);
+            const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName.toLowerCase()}`);
+            if (!response.ok) {
+                handleFailure(`Could not find details for "${capitalize(pokemonName)}".`);
+                return;
+            }
+            const pokemonData = await response.json();
+            router.push(`/pokemon/${pokemonData.id}`);
+        } catch (error) {
+            console.error('Failed to fetch pokemon details by name:', error);
+            handleFailure('An error occurred while fetching Pokémon details.');
+        }
    };
 
    const handleFailure = (message: string) => {
@@ -113,7 +125,6 @@ export default function SnapPage() {
         setIsProcessing(true);
         setImageSrc(imageData);
         
-        // Use the same robust Genkit flow for all devices.
         await identifyWithGenkit(imageData);
 
     }, [isProcessing, router, toast, webcamRef]);
