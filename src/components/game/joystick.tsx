@@ -22,12 +22,13 @@ const JoystickButton = ({
   children: React.ReactNode;
 }) => {
   const handlePointerDown = (e: React.PointerEvent) => {
-    e.currentTarget.setPointerCapture(e.pointerId);
+    // Allow multiple buttons to be captured for diagonal-like feel
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
     onDirectionChange(direction);
   };
   
   const handlePointerUp = (e: React.PointerEvent) => {
-    e.currentTarget.releasePointerCapture(e.pointerId);
+    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
     onDirectionChange('none');
   };
 
@@ -37,7 +38,7 @@ const JoystickButton = ({
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp} // Handles case where pointer leaves screen
       className={cn(
-        "bg-gray-700 border-2 border-gray-500 text-white flex items-center justify-center active:bg-primary active:border-primary-foreground focus:outline-none",
+        "bg-foreground/80 text-background flex items-center justify-center active:bg-primary active:border-primary-foreground focus:outline-none transition-colors duration-100",
         className
       )}
       aria-label={`Move ${direction}`}
@@ -49,18 +50,26 @@ const JoystickButton = ({
 
 export default function Joystick({ onDirectionChange }: JoystickProps) {
   return (
-    <div className="grid grid-cols-3 grid-rows-3 w-36 h-36 sm:w-40 sm:h-40 touch-none">
-      <div />
-      <JoystickButton direction="up" onDirectionChange={onDirectionChange}><ArrowUp size={24} /></JoystickButton>
-      <div />
+    <div className="grid grid-cols-3 grid-rows-3 w-32 h-32 sm:w-36 sm:h-36 touch-none shadow-lg">
+      <div className="col-start-2 row-start-1">
+        <JoystickButton direction="up" onDirectionChange={onDirectionChange} className="w-full h-full rounded-t-md"><ArrowUp size={24} /></JoystickButton>
+      </div>
+      
+      <div className="col-start-1 row-start-2">
+        <JoystickButton direction="left" onDirectionChange={onDirectionChange} className="w-full h-full rounded-l-md"><ArrowLeft size={24} /></JoystickButton>
+      </div>
+      
+      <div className="col-start-2 row-start-2 bg-foreground/80 flex items-center justify-center">
+        <div className="w-4 h-4 bg-foreground/60 rounded-full" />
+      </div>
 
-      <JoystickButton direction="left" onDirectionChange={onDirectionChange}><ArrowLeft size={24} /></JoystickButton>
-      <div className="bg-gray-600 border-y-2 border-gray-500" />
-      <JoystickButton direction="right" onDirectionChange={onDirectionChange}><ArrowRight size={24} /></JoystickButton>
-
-      <div />
-      <JoystickButton direction="down" onDirectionChange={onDirectionChange}><ArrowDown size={24} /></JoystickButton>
-      <div />
+      <div className="col-start-3 row-start-2">
+        <JoystickButton direction="right" onDirectionChange={onDirectionChange} className="w-full h-full rounded-r-md"><ArrowRight size={24} /></JoystickButton>
+      </div>
+      
+      <div className="col-start-2 row-start-3">
+        <JoystickButton direction="down" onDirectionChange={onDirectionChange} className="w-full h-full rounded-b-md"><ArrowDown size={24} /></JoystickButton>
+      </div>
     </div>
   );
 }
