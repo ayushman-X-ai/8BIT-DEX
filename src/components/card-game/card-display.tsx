@@ -22,7 +22,7 @@ interface CardDisplayProps {
 export default function CardDisplay({ card, isPlayer, isActive, onClick, isFlipped, isAttacking, isDefending }: CardDisplayProps) {
   if (isFlipped || !card) {
     return (
-      <div className="w-28 h-40 sm:w-40 sm:h-52 bg-card border-2 border-foreground p-1 flex items-center justify-center">
+      <div className="w-24 h-36 sm:w-32 sm:h-44 bg-card border-2 border-foreground p-1 flex items-center justify-center">
         <div className="w-full h-full border-2 border-dashed border-muted-foreground/50" />
       </div>
     );
@@ -35,7 +35,7 @@ export default function CardDisplay({ card, isPlayer, isActive, onClick, isFlipp
     <Card
       onClick={onClick}
       className={cn(
-        "relative w-28 h-40 sm:w-40 sm:h-52 rounded-none border-2 border-foreground transition-all duration-300",
+        "relative w-24 h-36 sm:w-32 sm:h-44 rounded-none border-2 border-foreground transition-all duration-300 flex flex-col",
         onClick && "cursor-pointer hover:-translate-y-1 hover:shadow-[4px_4px_0_hsl(var(--foreground))]",
         isActive && "shadow-[2px_2px_0_hsl(var(--foreground))]",
         isAttacking && "animate-[shake_0.5s_ease-in-out]",
@@ -44,33 +44,33 @@ export default function CardDisplay({ card, isPlayer, isActive, onClick, isFlipp
       style={{ animationIterationCount: 1 } as React.CSSProperties}
     >
       <CardContent className="p-0 text-center h-full flex flex-col">
-        <div className={cn("p-2 transition-colors border-b-2 border-foreground", typeClasses)}>
+        <div className={cn("p-1 sm:p-2 transition-colors border-b-2 border-foreground", typeClasses)}>
           <div className="relative aspect-square w-full">
             <Image
               src={card.imageUrl}
               alt={card.name}
               fill
               className="object-contain drop-shadow-lg"
-              sizes="(max-width: 768px) 33vw, 160px"
+              sizes="(max-width: 768px) 25vw, 128px"
               data-ai-hint={card.imageHint}
             />
           </div>
         </div>
-        <div className="p-2 bg-card text-center flex-grow flex flex-col justify-around">
-          <h3 className="text-xs sm:text-sm font-bold font-headline capitalize truncate">{capitalize(card.name)}</h3>
+        <div className="p-1 sm:p-2 bg-card text-center flex-grow flex flex-col justify-around">
+          <h3 className="text-[10px] sm:text-xs font-bold font-headline capitalize truncate">{capitalize(card.name)}</h3>
           
-          <div className="space-y-1.5 text-xs">
+          <div className="space-y-1 text-[9px] sm:text-[10px]">
             <div className="flex items-center justify-between gap-1">
-                <Heart className="w-3 h-3 text-primary" />
-                <div className="w-full h-2.5 border border-foreground bg-black/20 p-px">
+                <Heart className="w-2.5 h-2.5 text-primary" />
+                <div className="w-full h-2 border border-foreground bg-black/20 p-px">
                     <div className="h-full bg-primary transition-all duration-500" style={{ width: `${healthPercentage}%`}} />
                 </div>
-                <span className="font-bold w-6 text-right">{card.hp}</span>
+                <span className="font-bold w-5 sm:w-6 text-right">{card.hp}</span>
             </div>
             <div className="flex items-center justify-between gap-1">
-                <Swords className="w-3 h-3 text-accent" />
+                <Swords className="w-2.5 h-2.5 text-accent" />
                 <p className="flex-grow text-left font-semibold">{card.attack} ATK</p>
-                <Badge variant="outline" className="capitalize text-[9px] px-1 py-0 border-2 border-foreground">
+                <Badge variant="outline" className="capitalize text-[8px] px-1 py-0 border border-foreground">
                   {card.elementType}
                 </Badge>
             </div>
