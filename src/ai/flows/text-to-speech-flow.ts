@@ -128,7 +128,8 @@ const textToSpeechFlow = ai.defineFlow(
     }
 
     if (audioBuffers.length === 0) {
-      throw new Error('TTS failed. No audio could be generated for the provided text.');
+      console.error('TTS failed. No audio could be generated for the provided text.');
+      return { media: '' };
     }
 
     const combinedPcmData = Buffer.concat(audioBuffers);
