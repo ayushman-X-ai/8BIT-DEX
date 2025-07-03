@@ -7,21 +7,21 @@ type Direction = 'up' | 'down' | 'left' | 'right';
 type Position = { x: number; y: number };
 
 const MAZE_LAYOUT = [
-    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-    [0, 1, 1, 0, 1, 0, 1, 1, 1, 0],
-    [0, 1, 0, 0, 0, 0, 0, 0, 1, 0],
-    [0, 1, 0, 1, 1, 1, 1, 0, 1, 0],
-    [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-    [0, 1, 1, 1, 1, 0, 1, 1, 1, 0],
-    [0, 1, 0, 0, 0, 0, 0, 0, 1, 0],
-    [0, 1, 0, 1, 0, 1, 1, 0, 1, 0],
-    [0, 1, 0, 1, 0, 0, 0, 0, 1, 0],
-    [0, 0, 0, 1, 0, 0, 1, 0, 0, 0],
+    [0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
+    [0, 1, 0, 1, 0, 1, 0, 1, 1, 0],
+    [0, 0, 0, 1, 0, 0, 0, 1, 0, 0],
+    [1, 1, 0, 1, 1, 1, 0, 1, 0, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [0, 1, 1, 0, 1, 1, 1, 1, 0, 1],
+    [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
+    [1, 0, 1, 1, 1, 1, 0, 1, 1, 0],
+    [1, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+    [1, 1, 1, 1, 1, 1, 1, 0, 0, 0],
 ];
 
 const INITIAL_PLAYER_POS = { x: 0, y: 0 };
 const INITIAL_VILLAIN_POS = { x: 9, y: 9 };
-const POKEBALL_POS = { x: 5, y: 4 };
+const POKEBALL_POS = { x: 4, y: 4 };
 
 // BFS Pathfinding to find the shortest path from start to end
 const findPath = (maze: number[][], start: Position, end: Position): Position | null => {
