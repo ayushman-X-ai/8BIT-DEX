@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 
 const PokeballIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
@@ -14,15 +15,27 @@ const PokeballIcon = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
 );
 
-const PlayerIcon = ({ className }: { className?: string }) => (
-    <div className={className} style={{ imageRendering: 'pixelated' }}>
-      <div className="h-full w-full bg-blue-500" />
+const PlayerIcon = ({ style }: { style: React.CSSProperties }) => (
+    <div className="absolute transition-all duration-200 ease-in-out" style={style}>
+        <Image 
+            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png" 
+            alt="Player" 
+            fill 
+            sizes="10vw"
+            data-ai-hint="pokemon character"
+        />
     </div>
-  );
+);
   
-const VillainIcon = ({ className }: { className?: string }) => (
-    <div className={className} style={{ imageRendering: 'pixelated' }}>
-      <div className="h-full w-full bg-purple-700" />
+const VillainIcon = ({ style }: { style: React.CSSProperties }) => (
+    <div className="absolute transition-all duration-200 ease-in-out" style={style}>
+      <Image 
+        src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/94.png" 
+        alt="Villain" 
+        fill 
+        sizes="10vw" 
+        data-ai-hint="pokemon character"
+      />
     </div>
 );
 
@@ -35,37 +48,29 @@ interface GameBoardProps {
 
 export function GameBoard({ maze, playerPos, villainPos, pokeballPos }: GameBoardProps) {
     const gridSize = maze.length;
-
-    const renderCell = (cell: number, x: number, y: number) => {
-        const isPlayer = playerPos.x === x && playerPos.y === y;
-        const isVillain = villainPos.x === x && villainPos.y === y;
-        const isPokeball = pokeballPos.x === x && pokeballPos.y === y;
-
-        if (cell === 1) {
-            return <div key={`${x}-${y}`} className="bg-[#5c6e62] border-r border-b border-black/10" />;
-        }
-
-        return (
-            <div key={`${x}-${y}`} className="relative bg-transparent border-r border-b border-black/10">
-                {isPlayer && <PlayerIcon className="absolute inset-0" />}
-                {isVillain && <VillainIcon className="absolute inset-0" />}
-                {isPokeball && <PokeballIcon className="absolute inset-0 p-[10%]" />}
-            </div>
-        );
-    };
+    const cellSize = 100 / gridSize;
 
     return (
         <div 
-            className="grid"
-            style={{
-                gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
-                gridTemplateRows: `repeat(${gridSize}, 1fr)`,
-                width: '100%',
-                height: '100%',
-                imageRendering: 'pixelated'
-            }}
+            className="relative w-full h-full bg-transparent"
+            style={{ imageRendering: 'pixelated' }}
         >
-            {maze.map((row, y) => row.map((cell, x) => renderCell(cell, x, y)))}
+            {/* Maze Background Grid */}
+            <div className="grid h-full w-full" style={{ gridTemplateColumns: `repeat(${gridSize}, 1fr)`}}>
+                {maze.map((row, y) => row.map((cell, x) => (
+                    <div key={`cell-${x}-${y}`} className={`border-r border-b border-black/10 ${cell === 1 ? 'bg-[#5c6e62]' : 'bg-transparent'}`} />
+                )))}
+            </div>
+
+            {/* Game Objects */}
+            <PlayerIcon style={{ top: `${playerPos.y * cellSize}%`, left: `${playerPos.x * cellSize}%`, width: `${cellSize}%`, height: `${cellSize}%` }} />
+            <VillainIcon style={{ top: `${villainPos.y * cellSize}%`, left: `${villainPos.x * cellSize}%`, width: `${cellSize}%`, height: `${cellSize}%` }} />
+            <div 
+                className="absolute p-[10%]" 
+                style={{ top: `${pokeballPos.y * cellSize}%`, left: `${pokeballPos.x * cellSize}%`, width: `${cellSize}%`, height: `${cellSize}%` }}
+            >
+                <PokeballIcon className="w-full h-full" />
+            </div>
         </div>
     );
 }
