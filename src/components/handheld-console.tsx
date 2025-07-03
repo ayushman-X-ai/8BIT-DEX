@@ -20,9 +20,7 @@ export function HandheldConsole({ children, onDirectionalPad, onAButton, onBButt
     return (
         <div className="bg-slate-100 dark:bg-slate-900 h-dvh w-screen flex items-center justify-center font-body text-black overflow-hidden p-2 sm:p-4">
             
-            <div className="relative w-full max-w-sm aspect-[10/17] 
-                           sm:h-full sm:max-h-[90vh] sm:max-w-none sm:aspect-[10/16] 
-                           bg-gray-300 dark:bg-gray-500 rounded-2xl sm:rounded-3xl p-4 border-4 border-gray-400 dark:border-gray-700 shadow-2xl flex flex-col text-center">
+            <div className="relative max-w-full max-h-full aspect-[10/16] bg-gray-300 dark:bg-gray-500 rounded-2xl sm:rounded-3xl p-4 border-4 border-gray-400 dark:border-gray-700 shadow-2xl flex flex-col text-center">
 
                 {/* Top border detail */}
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 w-1/3 h-1 bg-gray-400/70 dark:bg-gray-600/70 rounded-full" />
