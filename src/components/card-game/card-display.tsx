@@ -22,7 +22,7 @@ interface CardDisplayProps {
 export default function CardDisplay({ card, isPlayer, isActive, onClick, isFlipped, isAttacking, isDefending }: CardDisplayProps) {
   if (isFlipped || !card) {
     return (
-      <div className="w-28 h-44 sm:w-40 sm:h-56 bg-card border-2 border-foreground p-1 flex items-center justify-center">
+      <div className="w-28 h-40 sm:w-40 sm:h-52 bg-card border-2 border-foreground p-1 flex items-center justify-center">
         <div className="w-full h-full border-2 border-dashed border-muted-foreground/50" />
       </div>
     );
@@ -35,7 +35,7 @@ export default function CardDisplay({ card, isPlayer, isActive, onClick, isFlipp
     <Card
       onClick={onClick}
       className={cn(
-        "relative w-28 h-44 sm:w-40 sm:h-56 rounded-none border-2 border-foreground transition-all duration-300",
+        "relative w-28 h-40 sm:w-40 sm:h-52 rounded-none border-2 border-foreground transition-all duration-300",
         onClick && "cursor-pointer hover:-translate-y-1 hover:shadow-[4px_4px_0_hsl(var(--foreground))]",
         isActive && "shadow-[2px_2px_0_hsl(var(--foreground))]",
         isAttacking && "animate-[shake_0.5s_ease-in-out]",
