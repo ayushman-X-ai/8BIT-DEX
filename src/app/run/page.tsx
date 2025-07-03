@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Play, RefreshCw, Power } from 'lucide-react';
+import { Play, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import GameBoard from '@/components/game/game-board';
 import Joystick from '@/components/game/joystick';
