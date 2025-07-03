@@ -69,7 +69,7 @@ export default function DexRunPage() {
         switch (gameState) {
             case 'menu':
                 return (
-                    <div className="flex flex-col items-center justify-center h-full text-center">
+                    <div className="flex flex-col items-center justify-center h-full text-center p-4">
                         <h1 className="font-headline text-3xl text-black drop-shadow-[2px_2px_0_rgba(0,0,0,0.2)]">Dex Run</h1>
                         <p className="text-xs mt-2 text-black/70">Grab the Pokéball!</p>
                         <Button onClick={startGame} className="mt-4" size="sm">Start Game</Button>
@@ -103,10 +103,8 @@ export default function DexRunPage() {
     }
 
     return (
-        <div className="bg-background min-h-screen flex items-center justify-center p-4">
-            <HandheldConsole onDirectionalPad={movePlayer} disabled={gameState !== 'playing'}>
-                {renderScreenContent()}
-            </HandheldConsole>
-        </div>
+        <HandheldConsole onDirectionalPad={movePlayer} disabled={gameState !== 'playing'}>
+            {renderScreenContent()}
+        </HandheldConsole>
     );
 }

@@ -13,68 +13,50 @@ interface HandheldConsoleProps {
 }
 
 export function HandheldConsole({ children, onDirectionalPad, disabled = false }: HandheldConsoleProps) {
-    const dPadButtonClasses = "bg-[#333] active:bg-[#555] text-gray-400 p-2 flex items-center justify-center transition-colors";
+    const dPadButtonClasses = "bg-gray-800 active:bg-gray-600 text-gray-300 flex items-center justify-center transition-colors disabled:opacity-60";
 
     return (
-        <div className="bg-[#fdfd96] p-4 sm:p-6 rounded-lg shadow-2xl border-4 border-[#e6e686] max-w-sm w-full font-body">
-            {/* Top Bezel */}
-            <div className="flex justify-center items-center mb-4">
-                <div className="h-2 w-1/4 bg-gray-300 rounded-full" />
-            </div>
-
+        <div className="bg-blue-600 h-screen w-screen flex flex-col items-center justify-around p-4 font-body overflow-hidden">
+            
             {/* Screen Area */}
-            <div className="bg-[#222] p-2 rounded-md shadow-inner">
-                <div className="relative bg-[#94a89a] aspect-square w-full overflow-hidden shadow-inner border-2 border-[#111]">
-                    {children}
-                </div>
-            </div>
-
-            {/* Logo and Speaker */}
-            <div className="flex items-center justify-between mt-4 px-2">
-                <h2 className="font-headline text-lg text-blue-800/70 italic">8BIT-DEX</h2>
-                <div className="flex flex-col gap-0.5">
-                    {Array.from({ length: 4 }).map((_, i) => (
-                        <div key={i} className="h-0.5 w-8 bg-black/20 rounded-full" />
-                    ))}
+            <div className="w-full max-w-xl text-center space-y-4">
+                <h2 className="font-headline text-xl text-yellow-300 uppercase" style={{textShadow: '2px 2px 0px rgba(0,0,0,0.2)'}}>8BIT-DEX</h2>
+                <div className="bg-black/50 p-2 rounded-lg shadow-inner">
+                    <div className="relative bg-[#94a89a] aspect-square w-full overflow-hidden shadow-inner border-4 border-black/50">
+                        {children}
+                    </div>
                 </div>
             </div>
 
             {/* Controls */}
-            <div className="flex justify-between items-center mt-6">
+            <div className="flex flex-col items-center gap-6">
                 {/* D-Pad */}
-                <div className="relative w-24 h-24">
-                    <button onClick={() => onDirectionalPad('up')} disabled={disabled} className={cn(dPadButtonClasses, "absolute top-0 left-1/2 -translate-x-1/2 w-8 h-8 rounded-t-sm")}>
-                        <ArrowUp size={16} />
+                <div className="relative w-32 h-32">
+                    <button onClick={() => onDirectionalPad('up')} disabled={disabled} className={cn(dPadButtonClasses, "absolute top-0 left-1/2 -translate-x-1/2 w-10 h-10 rounded-t-lg")}>
+                        <ArrowUp size={20} />
                     </button>
-                    <button onClick={() => onDirectionalPad('down')} disabled={disabled} className={cn(dPadButtonClasses, "absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-8 rounded-b-sm")}>
-                        <ArrowDown size={16} />
+                    <button onClick={() => onDirectionalPad('down')} disabled={disabled} className={cn(dPadButtonClasses, "absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-10 rounded-b-lg")}>
+                        <ArrowDown size={20} />
                     </button>
-                    <button onClick={() => onDirectionalPad('left')} disabled={disabled} className={cn(dPadButtonClasses, "absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-l-sm")}>
-                        <ArrowLeft size={16} />
+                    <button onClick={() => onDirectionalPad('left')} disabled={disabled} className={cn(dPadButtonClasses, "absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 rounded-l-lg")}>
+                        <ArrowLeft size={20} />
                     </button>
-                    <button onClick={() => onDirectionalPad('right')} disabled={disabled} className={cn(dPadButtonClasses, "absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-r-sm")}>
-                        <ArrowRight size={16} />
+                    <button onClick={() => onDirectionalPad('right')} disabled={disabled} className={cn(dPadButtonClasses, "absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 rounded-r-lg")}>
+                        <ArrowRight size={20} />
                     </button>
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-[#333] flex items-center justify-center">
-                        <div className="w-3 h-3 bg-[#222] rounded-full" />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-gray-800 flex items-center justify-center">
+                        <div className="w-4 h-4 bg-black/50 rounded-full" />
                     </div>
                 </div>
-
-                {/* A/B Buttons */}
-                <div className="flex items-center gap-4">
-                    <div className="flex flex-col items-center">
-                        <div className="w-10 h-10 bg-[#e0474c] rounded-full shadow-md border-2 border-[#c23a3f] active:bg-[#c23a3f]" />
-                        <span className="font-headline text-sm mt-1 text-black/70">A</span>
-                    </div>
-                     <div className="flex flex-col items-center">
-                        <div className="w-10 h-10 bg-[#e0474c] rounded-full shadow-md border-2 border-[#c23a3f] active:bg-[#c23a3f]" />
-                        <span className="font-headline text-sm mt-1 text-black/70">B</span>
-                    </div>
+                 {/* A Button */}
+                <div className="flex flex-col items-center">
+                    <div className="w-16 h-16 bg-red-600 rounded-full shadow-lg border-4 border-red-800 active:bg-red-700" />
+                    <span className="font-headline text-lg mt-2 text-white/90">A</span>
                 </div>
             </div>
             
             {/* Power LED */}
-            <div className="absolute top-24 left-6 sm:top-28 sm:left-10 h-2.5 w-2.5 rounded-full bg-red-500/80 border border-red-700/50 shadow-[0_0_5px_red] animate-pulse" />
+            <div className="absolute top-6 left-6 h-3 w-3 rounded-full bg-red-500/80 border-2 border-red-700/50 shadow-[0_0_8px_red] animate-pulse" />
         </div>
     );
 }
