@@ -21,19 +21,20 @@ export function HandheldConsole({ children, onDirectionalPad, onAButton, onBButt
     const actionButtonClasses = "w-14 h-14 rounded-full bg-[#a93b4f] border-2 border-[#8c2a3e] active:bg-[#8c2a3e] flex items-center justify-center font-bold text-lg text-white/80 shadow-md disabled:opacity-60";
 
     return (
-        <div className="bg-slate-100 dark:bg-slate-900 h-dvh w-screen flex items-center justify-center font-body text-black overflow-hidden p-2 sm:p-4">
+        <div className="relative bg-slate-100 dark:bg-slate-900 h-dvh w-screen flex items-center justify-center font-body text-black overflow-hidden">
+            
+            <div className="absolute top-4 left-4 z-20">
+                <Link href="/" aria-label="Back to 8BitDex">
+                    <Button variant="outline" size="xs" className="border-2 border-foreground">
+                        <ArrowLeft />
+                        Back
+                    </Button>
+                </Link>
+            </div>
             
             <div className="relative w-full max-w-[450px] aspect-[10/16] h-auto max-h-full bg-[#e0d8b0] dark:bg-gray-500 rounded-xl sm:rounded-2xl p-4 sm:p-6 border-b-8 border-t-2 border-x-2 border-black/20 shadow-xl flex flex-col text-center">
 
-                {/* Top border detail & Back button */}
-                <div className="absolute top-4 left-4 z-10">
-                    <Link href="/" aria-label="Back to 8BitDex">
-                        <Button variant="ghost" size="sm" className="h-auto px-2 py-1 text-xs text-black/60 dark:text-white/60 hover:bg-black/10">
-                            <ArrowLeft className="h-4 w-4 mr-1" />
-                            Back
-                        </Button>
-                    </Link>
-                </div>
+                {/* Top decorative elements */}
                 <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-1/4 h-1.5 bg-black/10 rounded-full" />
                 <div className="absolute top-2.5 right-6 h-[calc(100%-2rem)] w-1.5 bg-black/10 rounded-full" />
 
