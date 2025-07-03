@@ -8,6 +8,7 @@ import { useGameLogic } from '@/hooks/use-game-logic';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { capitalize } from '@/lib/pokemon-utils';
+import { textToSpeech } from '@/ai/flows/text-to-speech-flow';
 
 const PokedexScanner = ({ pokemonName }: { pokemonName: string }) => (
     <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-20 overflow-hidden">
@@ -42,8 +43,19 @@ export default function DexRunPage() {
         try {
             const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${randomPokemonId}`);
             const data = await res.json();
-            setCaughtPokemon({ id: data.id, name: capitalize(data.name) });
+            const pokemonName = capitalize(data.name);
+            setCaughtPokemon({ id: data.id, name: pokemonName });
             setShowCapture(true);
+
+            try {
+                const ttsResult = await textToSpeech(pokemonName);
+                if (ttsResult.media) {
+                    sessionStorage.setItem('ttsAudioData', ttsResult.media);
+                }
+            } catch (ttsError) {
+                console.error("Failed to generate or store TTS audio:", ttsError);
+            }
+
             setTimeout(() => {
                 router.push(`/pokemon/${data.id}`);
             }, 2500);
