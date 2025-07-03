@@ -4,14 +4,11 @@ import React from 'react';
 import Image from 'next/image';
 
 const PokeballIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-        <path fill="#FF0000" d="M0 8h16v5H0z"/>
-        <path fill="#FFFFFF" d="M0 3h16v5H0z"/>
-        <path fill="#000000" d="M0 7h16v2H0z"/>
-        <path fill="#FFFFFF" d="M6 7h4v2H6z"/>
-        <path fill="#000000" d="M7 7.5h2v1H7z"/>
-        <path fill="#000000" d="M8 3h1v1H8z M7 4h1v1H7z M9 4h1v1H9z M6 5h1v1H6z M10 5h1v1h-1z M5 6h1v1H5z M11 6h1v1h-1z"/>
-        <path fill="#000000" d="M8 13h1v1H8z M7 12h1v1H7z M9 12h1v1H9z M6 11h1v1H6z M10 11h1v1h-1z M5 10h1v1H5z M11 10h1v1h-1z"/>
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+        <circle cx="12" cy="12" r="10" fill="#fff" stroke="#000" strokeWidth="2" />
+        <path d="M2 12A10 10 0 0 1 12 2v10H2z" fill="#FF0000" />
+        <path d="M12 2a10 10 0 0 1 10 10h-10V2z" fill="#FF0000" />
+        <circle cx="12" cy="12" r="3.5" fill="#fff" stroke="#000" strokeWidth="2" />
     </svg>
 );
 
@@ -64,7 +61,7 @@ export function GameBoard({ maze, playerPos, villainPos, pokeballPos }: GameBoar
 
             {/* Game Objects */}
             <PlayerIcon style={{ top: `${playerPos.y * cellSize}%`, left: `${playerPos.x * cellSize}%`, width: `${cellSize}%`, height: `${cellSize}%` }} />
-            <VillainIcon style={{ top: `${villainPos.y * cellSize}%`, left: `${villainPos.x * cellSize}%`, width: `${cellSize}%`, height: `${cellSize}%` }} />
+            <VillainIcon style={{ top: `${villainPos.y * cellSize}%`, left: `${villainPos.y * cellSize}%`, width: `${cellSize}%`, height: `${cellSize}%` }} />
             <div 
                 className="absolute animate-pokeball-pulse" 
                 style={{ top: `${pokeballPos.y * cellSize}%`, left: `${pokeballPos.x * cellSize}%`, width: `${cellSize}%`, height: `${cellSize}%` }}
