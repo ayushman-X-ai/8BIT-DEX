@@ -11,18 +11,27 @@ type Direction = 'up' | 'down' | 'left' | 'right';
 interface HandheldConsoleProps {
     children: React.ReactNode;
     onDirectionalPad: (direction: Direction) => void;
-    onAButton?: () => void;
-    onBButton?: () => void;
     disabled?: boolean;
 }
 
-export function HandheldConsole({ children, onDirectionalPad, onAButton, onBButton, disabled = false }: HandheldConsoleProps) {
+const ArrowIcon = ({ rotation }: { rotation: string }) => (
+    <svg 
+        width="14" 
+        height="14" 
+        viewBox="0 0 12 12" 
+        fill="currentColor" 
+        xmlns="http://www.w3.org/2000/svg" 
+        className={cn('text-black/40', rotation)}
+    >
+        <path d="M4 2L10 6L4 10V2Z"/>
+    </svg>
+);
+
+
+export function HandheldConsole({ children, onDirectionalPad, disabled = false }: HandheldConsoleProps) {
     // Classes for a 3D, shaded D-pad
     const dPadButtonClasses = "bg-[#3d3d3d] active:bg-[#2e2e2e] border-2 border-t-[#555] border-l-[#555] border-b-black/70 border-r-black/70 active:border-b-[#555] active:border-r-[#555] active:border-t-black/70 active:border-l-black/70 flex items-center justify-center transition-colors disabled:opacity-60";
     
-    // Classes for shiny, 3D action buttons
-    const actionButtonClasses = "w-14 h-14 rounded-full bg-[#a0202c] active:bg-[#8c1b26] text-white/90 font-bold text-lg flex items-center justify-center transition-colors disabled:opacity-60 shadow-[inset_2px_2px_2px_0_rgba(255,255,255,0.25),inset_-2px_-2px_2px_0_rgba(0,0,0,0.25),2px_2px_4px_rgba(0,0,0,0.3)] active:shadow-[inset_2px_2px_2px_0_rgba(0,0,0,0.25)]";
-
     return (
         <div className="relative bg-slate-100 dark:bg-slate-900 h-dvh w-screen flex items-center justify-center font-body text-black overflow-hidden p-4">
             
@@ -38,7 +47,7 @@ export function HandheldConsole({ children, onDirectionalPad, onAButton, onBButt
             <div className="relative w-full max-w-[480px] aspect-[10/16] h-auto max-h-full bg-[#d72c3a] rounded-xl sm:rounded-2xl p-4 sm:p-6 border-b-8 border-t-2 border-x-2 border-black/20 shadow-xl flex flex-col text-center">
 
                 {/* --- Screen Area --- */}
-                <div className="relative w-full aspect-square bg-gray-800 pt-6 pb-4 px-4 rounded-t-lg rounded-b-2xl shadow-inner mb-4">
+                <div className="relative w-full aspect-[4/3] bg-gray-800 pt-6 pb-4 px-4 rounded-t-lg rounded-b-2xl shadow-inner mb-4">
                     <div className="relative bg-[#94a89a] h-full w-full overflow-hidden shadow-inner border-4 border-black/50">
                         {children}
                         {/* Screen Power LED */}
@@ -47,30 +56,31 @@ export function HandheldConsole({ children, onDirectionalPad, onAButton, onBButt
                 </div>
 
                 {/* --- Controls Area --- */}
-                <div className="flex-grow w-full grid grid-cols-2 items-center gap-4 px-2 mt-4">
+                <div className="flex-grow w-full grid grid-cols-1 justify-center items-center px-2 mt-4">
                     
                     {/* D-Pad */}
                     <div className="flex justify-center items-center">
                         <div className="relative w-28 h-28 grid grid-cols-3 grid-rows-3">
                             <div />
-                            <button onClick={() => onDirectionalPad('up')} disabled={disabled} className={cn(dPadButtonClasses, "rounded-t-md")}></button>
+                            <button onClick={() => onDirectionalPad('up')} disabled={disabled} className={cn(dPadButtonClasses, "rounded-t-md")}>
+                                <ArrowIcon rotation="-rotate-90" />
+                            </button>
                             <div />
-                            <button onClick={() => onDirectionalPad('left')} disabled={disabled} className={cn(dPadButtonClasses, "rounded-l-md")}></button>
+                            <button onClick={() => onDirectionalPad('left')} disabled={disabled} className={cn(dPadButtonClasses, "rounded-l-md")}>
+                                <ArrowIcon rotation="rotate-180" />
+                            </button>
                             <div className="bg-[#3d3d3d]"></div>
-                            <button onClick={() => onDirectionalPad('right')} disabled={disabled} className={cn(dPadButtonClasses, "rounded-r-md")}></button>
+                            <button onClick={() => onDirectionalPad('right')} disabled={disabled} className={cn(dPadButtonClasses, "rounded-r-md")}>
+                                <ArrowIcon rotation="" />
+                            </button>
                             <div />
-                            <button onClick={() => onDirectionalPad('down')} disabled={disabled} className={cn(dPadButtonClasses, "rounded-b-md")}></button>
+                            <button onClick={() => onDirectionalPad('down')} disabled={disabled} className={cn(dPadButtonClasses, "rounded-b-md")}>
+                                <ArrowIcon rotation="rotate-90" />
+                            </button>
                             <div />
                         </div>
                     </div>
                     
-                    {/* A & B Buttons */}
-                    <div className="flex justify-center items-center">
-                        <div className="relative w-36 h-20 flex justify-between items-center -rotate-[25deg] gap-4">
-                           <button onClick={onBButton} disabled={disabled} className={cn(actionButtonClasses)}>B</button>
-                           <button onClick={onAButton} disabled={disabled} className={cn(actionButtonClasses)}>A</button>
-                        </div>
-                    </div>
                 </div>
                 
                  {/* --- Speaker Grill --- */}
