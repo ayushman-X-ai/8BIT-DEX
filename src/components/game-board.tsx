@@ -25,7 +25,7 @@ const PlayerIcon = ({ style }: { style: React.CSSProperties }) => (
 );
   
 const VillainIcon = ({ style }: { style: React.CSSProperties }) => (
-    <div className="absolute transition-all duration-200 ease-in-out" style={style}>
+    <div className="absolute transition-all duration-200 ease-in-out animate-villain-pulse" style={style}>
       <Image 
         src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/94.png" 
         alt="Villain" 

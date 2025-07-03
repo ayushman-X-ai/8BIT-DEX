@@ -115,7 +115,7 @@ export const useGameLogic = () => {
 
     useEffect(() => {
         if (gameState === 'playing') {
-            const villainInterval = setInterval(moveVillain, 850); // Villain moves every 850ms
+            const villainInterval = setInterval(moveVillain, 750); // Villain moves every 750ms
             return () => {
                 clearInterval(villainInterval);
             };

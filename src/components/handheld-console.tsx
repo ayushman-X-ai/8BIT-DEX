@@ -44,10 +44,10 @@ export function HandheldConsole({ children, onDirectionalPad, disabled = false }
                 </Link>
             </div>
             
-            <div className="relative w-full max-w-[480px] aspect-[10/16] h-auto max-h-full bg-[#d72c3a] rounded-xl sm:rounded-2xl p-4 sm:p-6 border-b-8 border-t-2 border-x-2 border-black/20 shadow-xl flex flex-col text-center">
+            <div className="relative w-full max-w-[480px] aspect-[10/16] h-auto max-h-full bg-[#d72c3a] rounded-xl sm:rounded-2xl p-4 sm:p-6 border-b-8 border-t-2 border-x-2 border-black/20 shadow-xl flex flex-col justify-between text-center">
 
                 {/* --- Screen Area --- */}
-                <div className="relative w-full aspect-[4/3] bg-gray-800 pt-6 pb-4 px-4 rounded-t-lg rounded-b-2xl shadow-inner mb-4">
+                <div className="relative w-full aspect-[10/8] bg-gray-800 pt-6 pb-4 px-4 rounded-t-lg rounded-b-2xl shadow-inner">
                     <div className="relative bg-[#94a89a] h-full w-full overflow-hidden shadow-inner border-4 border-black/50">
                         {children}
                         {/* Screen Power LED */}
@@ -56,7 +56,7 @@ export function HandheldConsole({ children, onDirectionalPad, disabled = false }
                 </div>
 
                 {/* --- Controls Area --- */}
-                <div className="flex-grow w-full grid grid-cols-1 justify-center items-center px-2 mt-4">
+                <div className="w-full grid grid-cols-1 justify-center items-center px-2">
                     
                     {/* D-Pad */}
                     <div className="flex justify-center items-center">

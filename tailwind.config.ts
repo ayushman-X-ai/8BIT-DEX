@@ -91,12 +91,17 @@ export default {
           '0%, 100%': { transform: 'scale(1)', opacity: '1' },
           '50%': { transform: 'scale(1.15)', opacity: '0.9' },
         },
+        'villain-pulse': {
+          '0%, 100%': { filter: 'drop-shadow(0 0 5px hsl(var(--destructive)))' },
+          '50%': { filter: 'drop-shadow(0 0 15px hsl(var(--destructive)))' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'scanline': 'scanline 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite',
         'pokeball-pulse': 'pokeball-pulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite',
+        'villain-pulse': 'villain-pulse 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite',
       },
     },
   },
