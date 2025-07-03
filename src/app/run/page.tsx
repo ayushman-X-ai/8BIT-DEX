@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Map, Loader2, Ban } from 'lucide-react';
+import { ArrowLeft, Ban, Loader2, Signal } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -12,6 +12,7 @@ import CaptureView from '@/components/game/capture-view';
 import { type Coordinates, getDistance, generateRandomPoint } from '@/lib/geo-utils';
 import { capitalize } from '@/lib/pokemon-utils';
 import { textToSpeech } from '@/ai/flows/text-to-speech-flow';
+import { cn } from '@/lib/utils';
 
 type GameState = 'initializing' | 'denied' | 'roaming' | 'capturing';
 
@@ -44,7 +45,10 @@ export default function DexRunPage() {
                         longitude: position.coords.longitude,
                     };
                     setCurrentPosition(newPos);
-                    setGameState('roaming');
+                    
+                    if (gameState === 'initializing') {
+                        setGameState('roaming');
+                    }
 
                     if (!targetPosition) {
                         generateNewTarget(newPos);
@@ -76,6 +80,7 @@ export default function DexRunPage() {
                 navigator.geolocation.clearWatch(geoWatchId.current);
             }
         };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [targetPosition, generateNewTarget, toast]);
 
     useEffect(() => {
@@ -118,28 +123,31 @@ export default function DexRunPage() {
         setEncounterPokemonId(null);
     }, [router, toast, currentPosition, generateNewTarget]);
 
+    const proximity = distance !== null ? Math.max(0, 1 - (distance / SPAWN_RADIUS_METERS)) : 0;
+
     const renderContent = () => {
         switch (gameState) {
             case 'initializing':
                 return (
-                    <div className="flex flex-col items-center justify-center text-center text-muted-foreground gap-4">
-                        <Loader2 className="h-12 w-12 animate-spin text-accent" />
-                        <h2 className="text-xl font-bold font-headline">Initializing Geolocation</h2>
-                        <p>Please allow location access to begin.</p>
+                    <div className="flex flex-col items-center justify-center text-center text-cyan-400 gap-4">
+                        <Loader2 className="h-12 w-12 animate-spin" />
+                        <h2 className="text-xl font-bold font-headline">Awaiting GPS Lock</h2>
+                        <p className="font-code text-sm">Please allow location access to begin.</p>
                     </div>
                 );
             case 'denied':
                 return (
-                    <div className="flex flex-col items-center justify-center text-center text-destructive-foreground bg-destructive p-8 gap-4">
+                    <div className="flex flex-col items-center justify-center text-center text-red-400 p-8 gap-4">
                         <Ban className="h-12 w-12" />
-                        <h2 className="text-xl font-bold font-headline">Location Access Required</h2>
-                        <p className="max-w-sm">{error || 'Please enable location permissions in your browser settings and refresh the page.'}</p>
+                        <h2 className="text-xl font-bold font-headline">Location Access Denied</h2>
+                        <p className="max-w-sm font-code text-sm">{error || 'Please enable location permissions in your browser settings and refresh the page.'}</p>
                     </div>
                 );
             case 'roaming':
                 return (
                     <RoamingView
                         distance={distance}
+                        proximity={proximity}
                         onEncounter={handleEncounter}
                         canEncounter={distance !== null && distance <= ENCOUNTER_RADIUS_METERS}
                     />
@@ -158,23 +166,53 @@ export default function DexRunPage() {
     };
     
     return (
-        <div className="bg-background min-h-screen flex flex-col font-body">
-            <header className="py-4 px-4 md:px-8 border-b-4 border-foreground sticky top-0 z-10 bg-background">
+        <div className="bg-gray-900 min-h-screen flex flex-col font-body" style={{
+            backgroundImage: 'radial-gradient(hsl(0 0% 100% / 0.05) 1px, transparent 1px)',
+            backgroundSize: '10px 10px',
+        }}>
+            <header className="py-4 px-4 md:px-8 sticky top-0 z-10 bg-gray-900/80 backdrop-blur-sm border-b-2 border-slate-700">
                 <div className="container mx-auto flex items-center justify-between">
                     <Link href="/" aria-label="Back to 8BitDex">
-                        <Button variant="outline" size="xs" className="border-2 border-foreground">
+                        <Button variant="outline" size="xs" className="border-2 border-foreground bg-slate-800 hover:bg-slate-700">
                             <ArrowLeft />
                             Back
                         </Button>
                     </Link>
-                    <div className="flex items-center gap-2 text-foreground font-headline">
-                        <Map className="h-5 w-5" />
-                        <h1 className="text-lg">DEX RUN</h1>
+                    <div className="flex items-center gap-3 text-cyan-400 font-headline">
+                        <Signal className="h-5 w-5" />
+                        <h1 className="text-lg tracking-widest">DEX RUN</h1>
                     </div>
                 </div>
             </header>
             <main className="flex-grow flex items-center justify-center p-4">
-                {renderContent()}
+                <div className="w-full max-w-sm h-auto aspect-[9/16] max-h-[800px] flex flex-col gap-4">
+                    {/* Device Frame */}
+                    <div className="flex-grow bg-gradient-to-br from-slate-700 to-slate-900 border-4 border-slate-600 rounded-[2.5rem] shadow-2xl p-4 flex flex-col relative">
+                        {/* Top Bezel with Speaker Grill */}
+                        <div className="h-8 flex-shrink-0 flex items-center justify-center px-4">
+                            <div className="w-16 h-1 bg-slate-900 rounded-full" />
+                        </div>
+
+                        {/* Screen Area */}
+                        <div className="flex-grow bg-black rounded-md overflow-hidden relative shadow-inner shadow-black/50 border-2 border-slate-900">
+                             {renderContent()}
+                        </div>
+                        
+                        {/* Bottom Bezel with decorative elements */}
+                         <div className="h-12 flex-shrink-0 flex items-center justify-between px-6 pt-4">
+                            <div className="w-4 h-4 rounded-full bg-red-500 animate-pulse shadow-[0_0_5px_red]" />
+                            <div className={cn(
+                                "w-10 h-10 rounded-full border-2 flex items-center justify-center transition-colors",
+                                gameState === 'roaming' ? 'bg-cyan-400/20 border-cyan-400' : 'bg-slate-900/50 border-slate-700'
+                            )}>
+                                <div className={cn(
+                                    "w-4 h-4 rounded-full transition-colors",
+                                    gameState === 'roaming' ? 'bg-cyan-400' : 'bg-slate-600'
+                                )} />
+                            </div>
+                         </div>
+                    </div>
+                </div>
             </main>
         </div>
     );

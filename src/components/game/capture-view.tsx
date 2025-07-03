@@ -9,16 +9,17 @@ import type { Pokemon } from '@/types/pokemon';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { capitalize } from '@/lib/pokemon-utils';
 
 
-const PokeballIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-        <path d="M12 2a10 10 0 1 0 10 10H12V2z" fill="hsl(var(--primary))" stroke="none" />
-        <path d="M12 22a10 10 0 0 0 10-10H12v10z" fill="hsl(var(--card))" stroke="none" />
-        <circle cx="12" cy="12" r="10" stroke="hsl(var(--foreground))" />
-        <line x1="2" y1="12" x2="22" y2="12" stroke="hsl(var(--foreground))" strokeWidth="3" />
-        <circle cx="12" cy="12" r="3" fill="hsl(var(--card))" stroke="hsl(var(--foreground))" strokeWidth="2" />
-    </svg>
+const PokeballIcon = ({ className, ...props }: React.SVGProps<SVGSVGElement> & { className?: string }) => (
+    <div className={cn("relative h-full w-full", className)} {...props}>
+        <div className="relative h-full w-full rounded-full border-[3px] border-slate-900 bg-white overflow-hidden group-hover:animate-pulse">
+            <div className="h-1/2 w-full bg-red-500"></div>
+        </div>
+        <div className="absolute top-1/2 left-0 w-full h-1.5 -translate-y-1/2 bg-slate-900"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-white border-[3px] border-slate-900"></div>
+    </div>
 );
 
 
@@ -33,6 +34,7 @@ export default function CaptureView({ pokemonId, onCaptureSuccess }: CaptureView
     const { toast } = useToast();
     const [pokemon, setPokemon] = useState<Pokemon | null>(null);
     const [captureState, setCaptureState] = useState<CaptureState>('finding');
+    const [hasCamera, setHasCamera] = useState(true);
 
     useEffect(() => {
         async function fetchPokemon() {
@@ -45,7 +47,6 @@ export default function CaptureView({ pokemonId, onCaptureSuccess }: CaptureView
             } catch (error) {
                 console.error(error);
                 toast({ variant: 'destructive', title: 'Error', description: 'Could not load Pokémon.' });
-                // In a real app, you might want a way to retry or go back
             }
         }
         fetchPokemon();
@@ -60,31 +61,46 @@ export default function CaptureView({ pokemonId, onCaptureSuccess }: CaptureView
         }, 1500);
 
         setTimeout(() => {
-            // Simple capture logic: 70% chance to succeed
             const captured = Math.random() < 0.7; 
             if (captured) {
                 setCaptureState('success');
                 setTimeout(() => onCaptureSuccess(pokemon), 1500);
             } else {
                 setCaptureState('failed');
-                toast({ title: 'Oh no!', description: `${pokemon.name} broke free!` });
+                toast({ title: 'Oh no!', description: `${capitalize(pokemon.name)} broke free!` });
                 setTimeout(() => setCaptureState('idle'), 2000);
             }
-        }, 4500); // 1.5s (throw) + 3s (wobble)
+        }, 4500);
     };
 
     return (
-        <div className="w-full h-full max-w-md mx-auto aspect-[9/16] bg-black border-4 border-foreground shadow-lg overflow-hidden relative flex flex-col justify-between">
-            <Webcam
-                audio={false}
-                mirrored={true}
-                className="absolute top-0 left-0 w-full h-full object-cover z-0"
-                videoConstraints={{ facingMode: 'environment' }}
-                onUserMediaError={() => {
-                     toast({ variant: 'destructive', title: 'Camera Error', description: 'Could not access camera.'})
-                }}
-            />
-            <div className="absolute inset-0 bg-black/10 z-10" />
+        <div className="w-full h-full bg-black overflow-hidden relative flex flex-col justify-between">
+            {hasCamera ? (
+                <Webcam
+                    audio={false}
+                    mirrored={true}
+                    className="absolute top-0 left-0 w-full h-full object-cover z-0"
+                    videoConstraints={{ facingMode: 'environment' }}
+                    onUserMediaError={() => {
+                        toast({ variant: 'destructive', title: 'Camera Error', description: 'Could not access camera. Using fallback view.'});
+                        setHasCamera(false);
+                    }}
+                />
+            ) : (
+                <div className="absolute inset-0 z-0 bg-gradient-to-br from-slate-800 to-slate-900" />
+            )}
+
+            {/* Futuristic AR Overlay */}
+            <div className="absolute inset-0 z-10 pointer-events-none border-4 border-cyan-400/30">
+                <div className="absolute top-2 left-2 text-cyan-400 font-code text-[10px] bg-black/50 px-2 py-1">LIVE FEED</div>
+                <div className="absolute bottom-2 right-2 text-cyan-400 font-code text-[10px] bg-black/50 px-2 py-1">TARGET: {pokemon ? capitalize(pokemon.name) : '...'}</div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 opacity-50">
+                    <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-red-500" />
+                    <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-red-500" />
+                    <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-red-500" />
+                    <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-red-500" />
+                </div>
+            </div>
 
             {/* Pokémon Sprite */}
             {captureState !== 'finding' && pokemon && (
@@ -117,13 +133,15 @@ export default function CaptureView({ pokemonId, onCaptureSuccess }: CaptureView
 
             {/* Capture Animation */}
             <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
-                <PokeballIcon className={cn(
-                    "h-20 w-20 text-foreground transition-all duration-500",
+                <div className={cn(
+                    "h-20 w-20 transition-all duration-500",
                     captureState === 'throwing' && "animate-[spin_1.5s_linear] scale-[4]",
                     captureState === 'wobbling' && "scale-100 animate-[bounce_1s_ease-in-out_3]",
                     captureState === 'success' && "scale-100 opacity-0",
                     (captureState === 'idle' || captureState === 'finding' || captureState === 'failed') && "scale-0 opacity-0"
-                )} />
+                )}>
+                    <PokeballIcon />
+                </div>
                 {captureState === 'success' && (
                     <div className="absolute text-yellow-300 text-5xl animate-ping">✨</div>
                 )}
@@ -134,10 +152,10 @@ export default function CaptureView({ pokemonId, onCaptureSuccess }: CaptureView
                 <Button
                     onClick={handleThrow}
                     disabled={captureState !== 'idle'}
-                    className="h-20 w-20 rounded-full border-4 border-foreground shadow-lg"
+                    className="h-20 w-20 rounded-full border-4 border-slate-500 bg-slate-700 text-white font-headline shadow-lg hover:bg-slate-600 active:scale-95 transition-all disabled:opacity-50"
                     aria-label="Throw Pokéball"
                 >
-                    <PokeballIcon className="h-12 w-12 text-foreground" />
+                    <PokeballIcon className="h-10 w-10" />
                 </Button>
             </div>
         </div>
