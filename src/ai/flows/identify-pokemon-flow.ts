@@ -1,7 +1,7 @@
 'use server';
 /**
  * @fileOverview An AI flow to identify a Pokémon from an image using the Gemini API.
- * This flow is intended for desktop use.
+ * This flow can be used on any device.
  *
  * - identifyPokemon - A function that handles the pokemon identification process.
  * - IdentifyPokemonInput - The input type for the identification flow.
@@ -26,7 +26,7 @@ const IdentifyPokemonOutputSchema = z.object({
 export type IdentifyPokemonOutput = z.infer<typeof IdentifyPokemonOutputSchema>;
 
 /**
- * Main exported function for desktop identification.
+ * Main exported function for Pokémon identification.
  */
 export async function identifyPokemon(input: IdentifyPokemonInput): Promise<IdentifyPokemonOutput> {
   return identifyPokemonFlow(input);
