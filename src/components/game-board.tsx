@@ -52,13 +52,13 @@ export function GameBoard({ maze, playerPos, villainPos, pokeballPos }: GameBoar
 
     return (
         <div 
-            className="relative w-full h-full bg-transparent"
+            className="relative w-full h-full bg-black"
             style={{ imageRendering: 'pixelated' }}
         >
             {/* Maze Background Grid */}
             <div className="grid h-full w-full" style={{ gridTemplateColumns: `repeat(${gridSize}, 1fr)`}}>
                 {maze.map((row, y) => row.map((cell, x) => (
-                    <div key={`cell-${x}-${y}`} className={`border-r border-b border-black/10 ${cell === 1 ? 'bg-[#5c6e62]' : 'bg-transparent'}`} />
+                    <div key={`cell-${x}-${y}`} className={cell === 1 ? 'bg-blue-600 border-2 border-t-blue-400 border-l-blue-400 border-b-blue-800 border-r-blue-800' : 'bg-transparent'} />
                 )))}
             </div>
 
@@ -66,10 +66,10 @@ export function GameBoard({ maze, playerPos, villainPos, pokeballPos }: GameBoar
             <PlayerIcon style={{ top: `${playerPos.y * cellSize}%`, left: `${playerPos.x * cellSize}%`, width: `${cellSize}%`, height: `${cellSize}%` }} />
             <VillainIcon style={{ top: `${villainPos.y * cellSize}%`, left: `${villainPos.x * cellSize}%`, width: `${cellSize}%`, height: `${cellSize}%` }} />
             <div 
-                className="absolute p-[10%]" 
+                className="absolute animate-pokeball-pulse" 
                 style={{ top: `${pokeballPos.y * cellSize}%`, left: `${pokeballPos.x * cellSize}%`, width: `${cellSize}%`, height: `${cellSize}%` }}
             >
-                <PokeballIcon className="w-full h-full" />
+                <PokeballIcon className="w-full h-full drop-shadow-[0_0_5px_white]" />
             </div>
         </div>
     );
