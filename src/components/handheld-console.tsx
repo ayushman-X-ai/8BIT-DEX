@@ -17,8 +17,11 @@ interface HandheldConsoleProps {
 }
 
 export function HandheldConsole({ children, onDirectionalPad, onAButton, onBButton, disabled = false }: HandheldConsoleProps) {
-    const dPadButtonClasses = "bg-gray-800 active:bg-black text-gray-300 flex items-center justify-center transition-colors disabled:opacity-60 shadow-inner";
-    const actionButtonClasses = "w-14 h-14 rounded-full bg-gray-700 border-2 border-gray-900 active:bg-gray-800 flex items-center justify-center font-bold text-lg text-white/80 shadow-md disabled:opacity-60";
+    // Classes for a 3D, shaded D-pad
+    const dPadButtonClasses = "bg-[#3d3d3d] active:bg-[#2e2e2e] border-2 border-t-[#555] border-l-[#555] border-b-black/70 border-r-black/70 active:border-b-[#555] active:border-r-[#555] active:border-t-black/70 active:border-l-black/70 flex items-center justify-center transition-colors disabled:opacity-60";
+    
+    // Classes for shiny, 3D action buttons
+    const actionButtonClasses = "w-14 h-14 rounded-full bg-[#a0202c] active:bg-[#8c1b26] text-white/90 font-bold text-lg flex items-center justify-center transition-colors disabled:opacity-60 shadow-[inset_2px_2px_2px_0_rgba(255,255,255,0.25),inset_-2px_-2px_2px_0_rgba(0,0,0,0.25),2px_2px_4px_rgba(0,0,0,0.3)] active:shadow-[inset_2px_2px_2px_0_rgba(0,0,0,0.25)]";
 
     return (
         <div className="relative bg-slate-100 dark:bg-slate-900 h-dvh w-screen flex items-center justify-center font-body text-black overflow-hidden p-4">
@@ -43,13 +46,8 @@ export function HandheldConsole({ children, onDirectionalPad, onAButton, onBButt
                     </div>
                 </div>
 
-                {/* --- Brand Name --- */}
-                <h1 className="my-2 font-headline text-2xl text-yellow-300 drop-shadow-[2px_2px_0px_rgba(0,0,0,0.2)]">
-                    8BIT-DEX
-                </h1>
-
                 {/* --- Controls Area --- */}
-                <div className="flex-grow w-full grid grid-cols-2 items-center gap-4 px-2">
+                <div className="flex-grow w-full grid grid-cols-2 items-center gap-4 px-2 mt-4">
                     
                     {/* D-Pad */}
                     <div className="flex justify-center items-center">
@@ -58,7 +56,7 @@ export function HandheldConsole({ children, onDirectionalPad, onAButton, onBButt
                             <button onClick={() => onDirectionalPad('up')} disabled={disabled} className={cn(dPadButtonClasses, "rounded-t-md")}></button>
                             <div />
                             <button onClick={() => onDirectionalPad('left')} disabled={disabled} className={cn(dPadButtonClasses, "rounded-l-md")}></button>
-                            <div className="bg-gray-800"></div>
+                            <div className="bg-[#3d3d3d]"></div>
                             <button onClick={() => onDirectionalPad('right')} disabled={disabled} className={cn(dPadButtonClasses, "rounded-r-md")}></button>
                             <div />
                             <button onClick={() => onDirectionalPad('down')} disabled={disabled} className={cn(dPadButtonClasses, "rounded-b-md")}></button>
