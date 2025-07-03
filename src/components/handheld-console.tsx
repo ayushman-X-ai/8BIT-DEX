@@ -1,7 +1,10 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 type Direction = 'up' | 'down' | 'left' | 'right';
 
@@ -20,15 +23,23 @@ export function HandheldConsole({ children, onDirectionalPad, onAButton, onBButt
     return (
         <div className="bg-slate-100 dark:bg-slate-900 h-dvh w-screen flex items-center justify-center font-body text-black overflow-hidden p-2 sm:p-4">
             
-            <div className="relative max-w-full max-h-full aspect-[10/16] bg-gray-300 dark:bg-gray-500 rounded-2xl sm:rounded-3xl p-4 border-4 border-gray-400 dark:border-gray-700 shadow-2xl flex flex-col text-center">
+            <div className="relative w-full h-full max-w-full max-h-full aspect-[10/16] sm:aspect-auto sm:max-w-md sm:max-h-[90vh] md:max-w-lg lg:max-w-xl bg-gray-300 dark:bg-gray-500 rounded-2xl sm:rounded-3xl p-4 border-4 border-gray-400 dark:border-gray-700 shadow-2xl flex flex-col text-center">
 
-                {/* Top border detail */}
+                {/* Top border detail & Back button */}
+                <div className="absolute top-4 left-4 z-10">
+                    <Link href="/" aria-label="Back to 8BitDex">
+                        <Button variant="ghost" size="sm" className="h-auto px-2 py-1 text-xs text-blue-800/80 dark:text-blue-300/80 hover:bg-black/10">
+                            <ArrowLeft className="h-4 w-4 mr-1" />
+                            Back
+                        </Button>
+                    </Link>
+                </div>
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 w-1/3 h-1 bg-gray-400/70 dark:bg-gray-600/70 rounded-full" />
 
                 {/* --- Screen Area --- */}
                 <div className="relative flex-[2_2_0%] flex flex-col justify-center items-center py-4">
                     <div className="w-full bg-gray-700 dark:bg-gray-800 pt-6 pb-4 px-4 rounded-lg shadow-inner">
-                        <div className="relative bg-[#94a89a] aspect-square w-full overflow-hidden shadow-inner border-4 border-black/50">
+                        <div className="relative bg-[#94a89a] aspect-[4/3] w-full overflow-hidden shadow-inner border-4 border-black/50">
                             {children}
                             {/* Screen Power LED */}
                              <div className="absolute top-2 left-2 h-3 w-3 rounded-full bg-red-500/80 border-2 border-red-700/50 shadow-[0_0_8px_red]" />
