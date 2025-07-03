@@ -1,4 +1,3 @@
-'use server';
 import type { CardData, ElementType } from "@/types/card-game";
 
 export const initialCards: CardData[] = [

@@ -1,5 +1,3 @@
-'use server';
-
 export type ElementType = 'fire' | 'water' | 'grass' | 'electric' | 'neutral';
 
 export interface CardData {
