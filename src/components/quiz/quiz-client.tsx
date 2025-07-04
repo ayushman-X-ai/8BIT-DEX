@@ -168,6 +168,7 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
 
     // Audio State
     const [ttsAudioUrl, setTtsAudioUrl] = useState<string | null>(null);
+    const [ttsAudio, setTtsAudio] = useState<HTMLAudioElement | null>(null);
     const soundsRef = useRef<{
         select: Howl | null;
         correct: Howl | null;
@@ -197,19 +198,6 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
         };
     }, []);
 
-    // Music controller
-    useEffect(() => {
-        const music = soundsRef.current.music;
-        if (!music) return;
-        
-        if (['generating', 'playing'].includes(gameState) && !music.playing()) {
-            music.play();
-        } else if (!['generating', 'playing'].includes(gameState) && music.playing()) {
-            music.stop();
-        }
-    }, [gameState]);
-
-
     // Load data from localStorage on component mount
     useEffect(() => {
         try {
@@ -225,7 +213,7 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
             console.error("Failed to load user data from localStorage", error);
         }
     }, []);
-
+    
     // Save data to localStorage whenever user data changes
     useEffect(() => {
         try {
@@ -248,6 +236,15 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
             setTimeout(() => setShowLevelUp(false), 3000);
         }
     }, [userData.xp, userData.level, xpForNextLevel]);
+
+     useEffect(() => {
+        if (ttsAudioUrl) {
+            const audio = new Audio(ttsAudioUrl);
+            setTtsAudio(audio);
+        } else {
+            setTtsAudio(null);
+        }
+    }, [ttsAudioUrl]);
 
     const generateQuestions = useCallback(async (mode: QuizMode) => {
         setGameState('generating');
@@ -299,6 +296,10 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
 
     const handleDifficultySelect = (selectedDifficulty: Difficulty) => {
         soundsRef.current.select?.play();
+        // Start music on the first user interaction if it's not already playing.
+        if (soundsRef.current.music && !soundsRef.current.music.playing()) {
+            soundsRef.current.music.play();
+        }
         setDifficulty(selectedDifficulty);
         setGameState('selecting-mode');
     };
@@ -398,12 +399,14 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
             setCurrentQuestionIndex(prev => prev + 1);
         } else {
             setGameState('finished');
+            soundsRef.current.music?.stop();
         }
         setIsTransitioning(false);
     };
     
     const restartQuiz = () => {
         soundsRef.current.select?.play();
+        soundsRef.current.music?.stop();
         setScore(0);
         setCurrentQuestionIndex(0);
         setUserAnswerId(null);
@@ -615,7 +618,7 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
                                     customClasses
                                 )}
                             >
-                                <span>{option.label}</span>
+                                <span className="truncate">{option.label}</span>
                                 {showFeedback && isCorrect && <CheckCircle />}
                                 {showFeedback && isSelected && !isCorrect && <XCircle />}
                             </Button>
@@ -646,12 +649,12 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
                                             Learn<span className="hidden sm:inline">&nbsp;More</span>
                                         </Button>
                                     </Link>
-                                    {ttsAudioUrl && (
+                                    {ttsAudio && (
                                     <Button 
                                             variant="secondary" 
                                             size="icon" 
                                             className="h-11 w-11 border-2 !border-foreground" 
-                                            onClick={() => new Audio(ttsAudioUrl).play()}
+                                            onClick={() => ttsAudio?.play()}
                                             aria-label="Play description"
                                         >
                                         <Volume2 />
