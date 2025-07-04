@@ -23,7 +23,7 @@ const createInitialPlayerState = (character: BrawlerCharacter, isPlayer: boolean
     hitStun: 0,
     attackCooldown: 0,
     ultraMeter: 0,
-    attack: {
+    activeAttack: {
         width: 0, height: 0, x: 0, y: 0
     }
 });
@@ -61,7 +61,7 @@ export const useBrawlerGameLoop = ({ playerChar, opponentChar, onGameOver }: Gam
         };
     }, []);
 
-    const checkCollision = (p1: BrawlerPlayerState, p2: BrawlerPlayerState | AttackBox) => {
+    const checkCollision = (p1: BrawlerPlayerState, p2: AttackBox) => {
         return (
             p1.x < p2.x + p2.width &&
             p1.x + p1.width > p2.x &&
@@ -155,15 +155,15 @@ export const useBrawlerGameLoop = ({ playerChar, opponentChar, onGameOver }: Gam
             const processAttack = (attacker: BrawlerPlayerState, defender: BrawlerPlayerState) => {
                 if (!attacker.isAttacking) return defender;
 
-                const attackX = attacker.direction === 'right' ? attacker.x + attacker.width : attacker.x - attacker.attack.baseWidth;
-                attacker.attack = { x: attackX, y: attacker.y + 20, width: attacker.attack.baseWidth, height: attacker.attack.baseHeight };
+                const attackX = attacker.direction === 'right' ? attacker.x + attacker.width : attacker.x - attacker.attackDetails.baseWidth;
+                attacker.activeAttack = { x: attackX, y: attacker.y + 20, width: attacker.attackDetails.baseWidth, height: attacker.attackDetails.baseHeight };
                 
-                if (checkCollision(defender, attacker.attack)) {
-                    const damage = Math.max(1, attacker.attack.damage - defender.defense);
+                if (checkCollision(defender, attacker.activeAttack)) {
+                    const damage = Math.max(1, attacker.attackDetails.damage - defender.defense);
                     defender.hp = Math.max(0, defender.hp - damage);
                     defender.isHit = true;
                     defender.hitStun = 15; // Stunned for 1/4 second
-                    defender.vx = (attacker.direction === 'right' ? 1 : -1) * attacker.attack.knockback;
+                    defender.vx = (attacker.direction === 'right' ? 1 : -1) * attacker.attackDetails.knockback;
                     defender.vy = 5; // Pop up
                     attacker.ultraMeter = Math.min(100, attacker.ultraMeter + 10);
                 }

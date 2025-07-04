@@ -11,7 +11,7 @@ export interface BrawlerCharacter {
     spriteUrl: string;
     width: number;
     height: number;
-    attack: {
+    attackDetails: {
         damage: number;
         knockback: number;
         baseWidth: number;
@@ -39,10 +39,7 @@ export interface BrawlerPlayerState extends BrawlerCharacter {
     hitStun: number; // number of frames to be stunned
     attackCooldown: number; // number of frames before next attack
     ultraMeter: number; // 0-100
-    attack: AttackBox & {
-        damage?: number;
-        knockback?: number;
-    };
+    activeAttack: AttackBox;
 }
 
 export interface BrawlerGameState {

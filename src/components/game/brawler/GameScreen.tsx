@@ -78,10 +78,10 @@ export default function GameScreen({ playerChar, opponentChar, onGameOver }: Gam
                  <div
                     className="absolute bg-red-500/50"
                     style={{
-                        width: player.attack.width,
-                        height: player.attack.height,
-                        left: player.attack.x,
-                        bottom: player.attack.y,
+                        width: player.activeAttack.width,
+                        height: player.activeAttack.height,
+                        left: player.activeAttack.x,
+                        bottom: player.activeAttack.y,
                     }}
                  />
             )}
@@ -91,10 +91,10 @@ export default function GameScreen({ playerChar, opponentChar, onGameOver }: Gam
                 <div
                     className="absolute bg-blue-500/50"
                     style={{
-                        width: opponent.attack.width,
-                        height: opponent.attack.height,
-                        left: opponent.attack.x,
-                        bottom: opponent.attack.y,
+                        width: opponent.activeAttack.width,
+                        height: opponent.activeAttack.height,
+                        left: opponent.activeAttack.x,
+                        bottom: opponent.activeAttack.y,
                     }}
                 />
             )}

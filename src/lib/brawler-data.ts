@@ -13,7 +13,7 @@ export const CHARACTERS: BrawlerCharacter[] = [
         spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png',
         width: 80,
         height: 80,
-        attack: {
+        attackDetails: {
             damage: 12,
             knockback: 8,
             baseWidth: 50,
@@ -32,7 +32,7 @@ export const CHARACTERS: BrawlerCharacter[] = [
         spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png',
         width: 80,
         height: 80,
-        attack: {
+        attackDetails: {
             damage: 14,
             knockback: 7,
             baseWidth: 60,
@@ -51,7 +51,7 @@ export const CHARACTERS: BrawlerCharacter[] = [
         spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png',
         width: 80,
         height: 80,
-        attack: {
+        attackDetails: {
             damage: 10,
             knockback: 6,
             baseWidth: 70,
