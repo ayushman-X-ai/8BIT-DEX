@@ -1,13 +1,22 @@
 import React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, BrainCircuit } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { PokemonListResult } from '@/types/pokemon';
 import QuizClient from '@/components/quiz/quiz-client';
 
+const QuizIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="none" {...props}>
+        {/* Bulb part */}
+        <path fill="hsl(var(--accent))" d="M10 6h4v1h-4z M9 7h6v1H9z M8 8h8v4H8z M9 12h6v1H9z M10 13h4v1h-4z" />
+        {/* Base part */}
+        <path fill="hsl(var(--foreground))" d="M10 14h4v1h-4z M9 15h6v1H9z M10 16h4v1h-4z" />
+    </svg>
+);
+
 async function getPokemonList(): Promise<PokemonListResult[]> {
     try {
-        const res = await fetch('https://pokeapi.co/api/v2/pokemon?limit=151');
+        const res = await fetch('https://pokeapi.co/api/v2/pokemon?limit=1025');
         if (!res.ok) {
             throw new Error('Failed to fetch Pokémon list');
         }
@@ -26,7 +35,7 @@ export default async function QuizPage() {
       return (
         <div className="bg-background min-h-screen flex flex-col font-body">
             <header className="py-2 px-4 md:px-8 sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b-4 border-foreground">
-                <div className="container mx-auto grid grid-cols-3 items-center">
+                <div className="container mx-auto grid grid-cols-[1fr_auto_1fr] items-center">
                     <div className="flex justify-start">
                         <Link href="/" aria-label="Back to 8BitDex">
                             <Button variant="outline" size="xs" className="border-2 border-foreground">
@@ -36,7 +45,7 @@ export default async function QuizPage() {
                         </Link>
                     </div>
                     <div className="flex items-center justify-center gap-3 text-primary font-headline">
-                        <BrainCircuit className="h-5 w-5" />
+                        <QuizIcon className="h-5 w-5" />
                         Quiz-Dex
                     </div>
                     <div />
@@ -53,7 +62,7 @@ export default async function QuizPage() {
   return (
     <div className="bg-background min-h-screen flex flex-col font-body">
       <header className="py-2 px-4 md:px-8 sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b-4 border-foreground">
-        <div className="container mx-auto grid grid-cols-3 items-center">
+        <div className="container mx-auto grid grid-cols-[1fr_auto_1fr] items-center">
             <div className="flex justify-start">
                 <Link href="/" aria-label="Back to 8BitDex">
                     <Button variant="outline" size="xs" className="border-2 border-foreground">
@@ -63,7 +72,7 @@ export default async function QuizPage() {
                 </Link>
             </div>
             <div className="flex items-center justify-center gap-3 text-foreground font-headline">
-                <BrainCircuit className="h-5 w-5" />
+                <QuizIcon className="h-5 w-5" />
                 <h1 className="text-sm sm:text-base">Quiz-Dex</h1>
             </div>
             <div />
