@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { ArrowLeft, Gamepad2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import BattleScreen from '@/components/battle/battle-screen';
 
 export default function DexRunPage() {
     return (
@@ -25,8 +24,13 @@ export default function DexRunPage() {
                     </div>
                 </div>
             </header>
-            <main className="flex-grow flex flex-col items-center justify-center p-2 sm:p-4 text-center">
-                <BattleScreen />
+            <main className="flex-grow flex flex-col items-center justify-center p-4 text-center">
+                <div className="space-y-4">
+                    <h2 className="text-3xl font-headline text-foreground">Coming Soon!</h2>
+                    <p className="text-muted-foreground max-w-md">
+                        This feature is under construction. Check back later for a new and exciting game!
+                    </p>
+                </div>
             </main>
         </div>
     );
