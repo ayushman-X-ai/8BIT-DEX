@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Search, Camera, Gamepad2 } from 'lucide-react';
+import { Search, Camera, Gamepad2, BrainCircuit } from 'lucide-react';
 import { PokemonGrid } from '@/components/pokemon-grid';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -49,9 +49,14 @@ export default function Home() {
             </h1>
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/run" aria-label="Play Dex Run">
+            <Link href="/run" aria-label="Play Dex Arcade">
               <Button variant="outline" size="icon" className="border-2 border-foreground">
                   <Gamepad2 className="h-4 w-4" />
+              </Button>
+            </Link>
+            <Link href="/quiz" aria-label="Play Quiz-Dex">
+              <Button variant="outline" size="icon" className="border-2 border-foreground">
+                  <BrainCircuit className="h-4 w-4" />
               </Button>
             </Link>
             <Link href="/snap" aria-label="Snap to Identify Pokémon">
