@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { CheckCircle, XCircle, Award, Loader2 } from 'lucide-react';
+import { CheckCircle, XCircle, Award, Loader2, BrainCircuit, Swords, Shuffle, Image as ImageIcon } from 'lucide-react';
 
 // prettier-ignore
 const POKEMON_TYPES = [
@@ -16,6 +16,8 @@ const POKEMON_TYPES = [
   "poison", "ground", "flying", "psychic", "bug", "rock", "ghost",
   "dragon", "dark", "steel", "fairy"
 ];
+
+type QuizMode = 'identify-pokemon' | 'type-matchup' | 'mixed';
 
 type QuizQuestion = {
     type: 'identify-pokemon';
@@ -91,7 +93,7 @@ const generateTypeMatchupQuestion = async (): Promise<QuizQuestion | null> => {
         
         return {
             type: 'type-matchup',
-            questionText: `What is super effective against ${capitalize(randomType)}?`,
+            questionText: `${capitalize(randomType)} is super effective against...?`,
             options,
             correctAnswerId: correctAnswer,
         };
@@ -107,14 +109,28 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
     const [score, setScore] = useState(0);
     const [userAnswerId, setUserAnswerId] = useState<number | string | null>(null);
     const [showFeedback, setShowFeedback] = useState(false);
-    const [gameState, setGameState] = useState<'loading' | 'playing' | 'finished'>('loading');
+    const [gameState, setGameState] = useState<'loading' | 'selecting' | 'generating' | 'playing' | 'finished'>('loading');
 
-    const generateQuestions = useCallback(async () => {
-        setGameState('loading');
+    const generateQuestions = useCallback(async (mode: QuizMode) => {
+        setGameState('generating');
         
         const questionPromises: Promise<QuizQuestion | null>[] = [];
         for (let i = 0; i < NUM_QUESTIONS; i++) {
-            const questionType = Math.random() > 0.4 ? 'identify-pokemon' : 'type-matchup';
+            let questionType: 'identify-pokemon' | 'type-matchup';
+
+            switch(mode) {
+                case 'identify-pokemon':
+                    questionType = 'identify-pokemon';
+                    break;
+                case 'type-matchup':
+                    questionType = 'type-matchup';
+                    break;
+                case 'mixed':
+                default:
+                    questionType = Math.random() > 0.5 ? 'identify-pokemon' : 'type-matchup';
+                    break;
+            }
+
             if (questionType === 'identify-pokemon' && allPokemon.length >= 4) {
                  questionPromises.push(Promise.resolve(generateIdentifyPokemonQuestion(allPokemon)));
             } else {
@@ -125,9 +141,8 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
         const newQuestions = (await Promise.all(questionPromises)).filter((q): q is QuizQuestion => q !== null);
         
         if (newQuestions.length < NUM_QUESTIONS) {
-            // Handle case where some questions failed to generate
             console.warn("Could not generate all questions. Retrying...");
-            setTimeout(generateQuestions, 1000); // Retry after a delay
+            setTimeout(() => generateQuestions(mode), 1000);
             return;
         }
 
@@ -136,8 +151,14 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
     }, [allPokemon]);
     
     useEffect(() => {
-        generateQuestions();
-    }, [generateQuestions]);
+        if (allPokemon.length > 0 && gameState === 'loading') {
+            setGameState('selecting');
+        }
+    }, [allPokemon, gameState]);
+
+    const handleModeSelect = (mode: QuizMode) => {
+        generateQuestions(mode);
+    }
     
     const handleAnswer = (answerId: number | string) => {
         if (showFeedback) return;
@@ -164,10 +185,53 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
         setCurrentQuestionIndex(0);
         setUserAnswerId(null);
         setShowFeedback(false);
-        generateQuestions();
+        setQuestions([]);
+        setGameState('selecting');
     };
 
-    if (gameState === 'loading' || questions.length === 0) {
+    if (gameState === 'loading') {
+        return (
+            <div className="flex flex-col items-center justify-center gap-4 text-muted-foreground">
+                <Loader2 className="w-12 h-12 animate-spin" />
+                <p className="font-headline text-lg">Loading Pokémon Data...</p>
+            </div>
+        );
+    }
+
+    if (gameState === 'selecting') {
+        return (
+            <Card className="w-full max-w-2xl p-6 sm:p-8 text-center border-2 border-foreground bg-card">
+                <BrainCircuit className="w-16 h-16 mx-auto text-accent" />
+                <h2 className="text-2xl sm:text-3xl font-headline mt-4">Choose Your Challenge!</h2>
+                <p className="text-muted-foreground mt-2 mb-8">Select a category to begin the quiz.</p>
+                <div className="grid grid-cols-1 gap-4">
+                     <Button onClick={() => handleModeSelect('identify-pokemon')} size="lg" variant="outline" className="h-auto py-4 border-2 !border-foreground justify-start">
+                        <ImageIcon className="mr-4 h-8 w-8 text-primary" />
+                        <div className="text-left">
+                            <p className="font-bold text-base">Sprite Mode</p>
+                            <p className="font-normal text-xs text-muted-foreground">Guess the Pokémon from its picture.</p>
+                        </div>
+                    </Button>
+                    <Button onClick={() => handleModeSelect('type-matchup')} size="lg" variant="outline" className="h-auto py-4 border-2 !border-foreground justify-start">
+                        <Swords className="mr-4 h-8 w-8 text-primary" />
+                        <div className="text-left">
+                            <p className="font-bold text-base">Battle Mode</p>
+                            <p className="font-normal text-xs text-muted-foreground">Test your knowledge of type matchups.</p>
+                        </div>
+                    </Button>
+                     <Button onClick={() => handleModeSelect('mixed')} size="lg" variant="outline" className="h-auto py-4 border-2 !border-foreground justify-start">
+                        <Shuffle className="mr-4 h-8 w-8 text-primary" />
+                        <div className="text-left">
+                            <p className="font-bold text-base">Mystery Mode</p>
+                            <p className="font-normal text-xs text-muted-foreground">A random mix of all question types.</p>
+                        </div>
+                    </Button>
+                </div>
+            </Card>
+        );
+    }
+
+     if (gameState === 'generating') {
         return (
             <div className="flex flex-col items-center justify-center gap-4 text-muted-foreground">
                 <Loader2 className="w-12 h-12 animate-spin" />
