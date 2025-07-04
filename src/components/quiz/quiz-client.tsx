@@ -137,10 +137,9 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
                         alt="A mystery Pokémon"
                         fill
                         priority
-                        className={cn("object-contain transition-all duration-500", showFeedback ? "brightness-100" : "brightness-0")}
+                        className="object-contain"
                         data-ai-hint="pokemon character"
                     />
-                     <div className={cn("absolute inset-0 bg-foreground transition-opacity duration-500", showFeedback ? "opacity-0" : "opacity-100")} />
                 </div>
                 
                 <h2 className="text-xl sm:text-2xl font-bold font-headline text-center mb-6">{currentQuestion.questionText}</h2>
