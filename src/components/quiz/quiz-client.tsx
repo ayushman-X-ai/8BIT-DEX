@@ -2,23 +2,33 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import type { PokemonListResult } from '@/types/pokemon';
+import type { PokemonListResult, PokemonType } from '@/types/pokemon';
 import { capitalize } from '@/lib/pokemon-utils';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { CheckCircle, XCircle, Award } from 'lucide-react';
+import { CheckCircle, XCircle, Award, Loader2 } from 'lucide-react';
 
-interface QuizQuestion {
+// prettier-ignore
+const POKEMON_TYPES = [
+  "normal", "fire", "water", "electric", "grass", "ice", "fighting",
+  "poison", "ground", "flying", "psychic", "bug", "rock", "ghost",
+  "dragon", "dark", "steel", "fairy"
+];
+
+type QuizQuestion = {
+    type: 'identify-pokemon';
     questionText: string;
     pokemonSpriteUrl: string;
-    options: {
-        name: string;
-        id: number;
-    }[];
+    options: { label: string; id: number }[];
     correctAnswerId: number;
-}
+} | {
+    type: 'type-matchup';
+    questionText: string;
+    options: { label: string; id: string }[];
+    correctAnswerId: string;
+};
 
 const NUM_QUESTIONS = 10;
 
@@ -28,50 +38,108 @@ const getIdFromUrl = (url: string) => {
     return parseInt(parts[parts.length - 2]);
 };
 
+// --- Question Generation Logic ---
+
+// Generates a "Who's That Pokémon?" question
+const generateIdentifyPokemonQuestion = (allPokemon: PokemonListResult[]): QuizQuestion | null => {
+    const shuffledPokemon = [...allPokemon].sort(() => 0.5 - Math.random());
+    if (shuffledPokemon.length < 4) return null;
+
+    const correctPokemon = shuffledPokemon[0];
+    const correctPokemonId = getIdFromUrl(correctPokemon.url);
+    
+    let options = [{ label: capitalize(correctPokemon.name), id: correctPokemonId }];
+    
+    shuffledPokemon.slice(1, 4).forEach(p => {
+        options.push({ label: capitalize(p.name), id: getIdFromUrl(p.url) });
+    });
+
+    return {
+        type: 'identify-pokemon',
+        questionText: "Who's that Pokémon?",
+        pokemonSpriteUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${correctPokemonId}.png`,
+        options: options.sort(() => 0.5 - Math.random()),
+        correctAnswerId: correctPokemonId,
+    };
+};
+
+// Generates a "Type Matchup" question
+const generateTypeMatchupQuestion = async (): Promise<QuizQuestion | null> => {
+    try {
+        const randomType = POKEMON_TYPES[Math.floor(Math.random() * POKEMON_TYPES.length)];
+        const res = await fetch(`https://pokeapi.co/api/v2/type/${randomType}`);
+        if (!res.ok) throw new Error(`Failed to fetch type data for ${randomType}`);
+        const data: PokemonType = await res.json();
+        
+        const effectiveRelations = data.damage_relations.double_damage_to;
+        if (effectiveRelations.length === 0) {
+            // This type is not super-effective against anything, try again recursively.
+            return generateTypeMatchupQuestion();
+        }
+
+        const correctAnswer = effectiveRelations[Math.floor(Math.random() * effectiveRelations.length)].name;
+        
+        const incorrectOptions = POKEMON_TYPES
+            .filter(t => t !== correctAnswer && t !== randomType && !effectiveRelations.some(r => r.name === t))
+            .sort(() => 0.5 - Math.random())
+            .slice(0, 3);
+            
+        const options = [
+            { label: capitalize(correctAnswer), id: correctAnswer },
+            ...incorrectOptions.map(t => ({ label: capitalize(t), id: t }))
+        ].sort(() => 0.5 - Math.random());
+        
+        return {
+            type: 'type-matchup',
+            questionText: `What is super effective against ${capitalize(randomType)}?`,
+            options,
+            correctAnswerId: correctAnswer,
+        };
+    } catch (error) {
+        console.error("Failed to generate type matchup question:", error);
+        return null;
+    }
+};
+
 export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResult[] }) {
     const [questions, setQuestions] = useState<QuizQuestion[]>([]);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [score, setScore] = useState(0);
-    const [userAnswerId, setUserAnswerId] = useState<number | null>(null);
+    const [userAnswerId, setUserAnswerId] = useState<number | string | null>(null);
     const [showFeedback, setShowFeedback] = useState(false);
-    const [gameState, setGameState] = useState<'playing' | 'finished'>('playing');
+    const [gameState, setGameState] = useState<'loading' | 'playing' | 'finished'>('loading');
 
-    const generateQuestions = useCallback(() => {
-        const shuffledPokemon = [...allPokemon].sort(() => 0.5 - Math.random());
-        const newQuestions: QuizQuestion[] = [];
-
+    const generateQuestions = useCallback(async () => {
+        setGameState('loading');
+        
+        const questionPromises: Promise<QuizQuestion | null>[] = [];
         for (let i = 0; i < NUM_QUESTIONS; i++) {
-            if (shuffledPokemon.length < 4) break;
-
-            const correctPokemon = shuffledPokemon[i];
-            const correctPokemonId = getIdFromUrl(correctPokemon.url);
-
-            let options = [{ name: capitalize(correctPokemon.name), id: correctPokemonId }];
-            
-            const otherPokemon = allPokemon.filter(p => getIdFromUrl(p.url) !== correctPokemonId);
-            const shuffledOptions = otherPokemon.sort(() => 0.5 - Math.random()).slice(0, 3);
-
-            shuffledOptions.forEach(p => {
-                options.push({ name: capitalize(p.name), id: getIdFromUrl(p.url) });
-            });
-
-            options = options.sort(() => 0.5 - Math.random());
-            
-            newQuestions.push({
-                questionText: "Who's that Pokémon?",
-                pokemonSpriteUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${correctPokemonId}.png`,
-                options: options,
-                correctAnswerId: correctPokemonId,
-            });
+            const questionType = Math.random() > 0.4 ? 'identify-pokemon' : 'type-matchup';
+            if (questionType === 'identify-pokemon' && allPokemon.length >= 4) {
+                 questionPromises.push(Promise.resolve(generateIdentifyPokemonQuestion(allPokemon)));
+            } else {
+                questionPromises.push(generateTypeMatchupQuestion());
+            }
         }
+
+        const newQuestions = (await Promise.all(questionPromises)).filter((q): q is QuizQuestion => q !== null);
+        
+        if (newQuestions.length < NUM_QUESTIONS) {
+            // Handle case where some questions failed to generate
+            console.warn("Could not generate all questions. Retrying...");
+            setTimeout(generateQuestions, 1000); // Retry after a delay
+            return;
+        }
+
         setQuestions(newQuestions);
+        setGameState('playing');
     }, [allPokemon]);
     
     useEffect(() => {
         generateQuestions();
     }, [generateQuestions]);
     
-    const handleAnswer = (answerId: number) => {
+    const handleAnswer = (answerId: number | string) => {
         if (showFeedback) return;
         
         setUserAnswerId(answerId);
@@ -97,11 +165,15 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
         setUserAnswerId(null);
         setShowFeedback(false);
         generateQuestions();
-        setGameState('playing');
     };
 
-    if (questions.length === 0) {
-        return <p className="text-muted-foreground">Generating quiz...</p>;
+    if (gameState === 'loading' || questions.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center gap-4 text-muted-foreground">
+                <Loader2 className="w-12 h-12 animate-spin" />
+                <p className="font-headline text-lg">Generating Quiz...</p>
+            </div>
+        );
     }
     
     if (gameState === 'finished') {
@@ -131,16 +203,18 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
             </div>
 
             <Card className="border-2 border-foreground bg-card p-4 sm:p-8">
-                <div className="relative w-48 h-48 sm:w-56 sm:h-56 mx-auto mb-6">
-                    <Image
-                        src={currentQuestion.pokemonSpriteUrl}
-                        alt="A mystery Pokémon"
-                        fill
-                        priority
-                        className="object-contain"
-                        data-ai-hint="pokemon character"
-                    />
-                </div>
+                {currentQuestion.type === 'identify-pokemon' && (
+                    <div className="relative w-48 h-48 sm:w-56 sm:h-56 mx-auto mb-6">
+                        <Image
+                            src={currentQuestion.pokemonSpriteUrl}
+                            alt="A mystery Pokémon"
+                            fill
+                            priority
+                            className="object-contain"
+                            data-ai-hint="pokemon character"
+                        />
+                    </div>
+                )}
                 
                 <h2 className="text-xl sm:text-2xl font-bold font-headline text-center mb-6">{currentQuestion.questionText}</h2>
                 
@@ -170,7 +244,7 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
                                     customClasses
                                 )}
                             >
-                                <span>{option.name}</span>
+                                <span>{option.label}</span>
                                 {showFeedback && isCorrect && <CheckCircle />}
                                 {showFeedback && isSelected && !isCorrect && <XCircle />}
                             </Button>
