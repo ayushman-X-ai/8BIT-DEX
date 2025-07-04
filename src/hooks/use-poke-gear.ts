@@ -7,37 +7,57 @@ import { Howl } from 'howler';
 import type { PokeGearLibs } from '@/types/dex-arcade';
 
 export const usePokeGear = (canvasRef: React.RefObject<HTMLDivElement>) => {
-  const pixiAppRef = useRef<Application | null>(null);
-  const howlerRef = useRef<Howl | null>(null);
-  const gsapTimelineRef = useRef<gsap.core.Timeline | null>(null);
-  
   const [isInitialized, setIsInitialized] = useState(false);
-
+  
   useEffect(() => {
-    // Only run if the canvas is ready and the app hasn't been created yet.
-    if (!canvasRef.current || pixiAppRef.current) return;
-
+    if (!canvasRef.current) {
+      return;
+    }
+    
+    // This effect creates and manages its own resources.
     let app: Application;
+    let bootSound: Howl;
+    let tl: gsap.core.Timeline;
 
-    const init = async () => {
+    const setup = async () => {
+      // Check if the component unmounted before we could finish setup
+      const currentCanvas = canvasRef.current;
+      if (!currentCanvas) return;
+
+      // 1. Create all resources
       app = new Application();
-      pixiAppRef.current = app; // Store instance in ref
-
-      await app.init({
-        resizeTo: canvasRef.current!,
-        backgroundAlpha: 0,
-        antialias: true,
-      });
-      canvasRef.current!.appendChild(app.canvas);
       
-      const bootSound = new Howl({
+      bootSound = new Howl({
         src: ['/audio/boot.mp3', '/audio/boot.ogg'],
         volume: 0.5,
         onerror: (id, err) => console.log('Howler error:', err),
       });
-      howlerRef.current = bootSound;
 
-      // --- Create Boot Sequence ---
+      tl = gsap.timeline({
+        onComplete: () => {
+          setIsInitialized(true);
+        },
+      });
+
+      // 2. Asynchronously initialize the Pixi app
+      await app.init({
+        resizeTo: currentCanvas,
+        backgroundAlpha: 0,
+        antialias: true,
+      });
+
+      // 3. Check if component unmounted during async init
+      if (!canvasRef.current) {
+        // If it unmounted, we need to clean up the resources we already created
+        tl.kill();
+        bootSound.stop();
+        app.destroy(true, true);
+        return;
+      }
+
+      // 4. Add canvas to DOM and build the scene
+      currentCanvas.appendChild(app.canvas);
+
       const bootContainer = new Container();
       app.stage.addChild(bootContainer);
 
@@ -65,38 +85,29 @@ export const usePokeGear = (canvasRef: React.RefObject<HTMLDivElement>) => {
       const barWidth = app.screen.width * 0.6;
       const barHeight = 16;
       progressBar.rect(0, 0, barWidth, barHeight).stroke({ width: 2, color: '#306230' });
-      progressBar.position.set((app.screen.width - barWidth) / 2, app.screen.height * 0.7);
+      progressBar.position.set((currentCanvas.offsetWidth - barWidth) / 2, currentCanvas.offsetHeight * 0.7);
       bootContainer.addChild(progressBar);
       
       const progressFill = new Graphics();
       progressFill.rect(2, 2, 0, barHeight - 4).fill({color: '#306230'});
       progressBar.addChild(progressFill);
 
-      const tl = gsap.timeline({
-        onComplete: () => {
-          setIsInitialized(true);
-          // Transition to main menu would happen here
-        },
-      });
-      gsapTimelineRef.current = tl;
-
+      // 5. Start animations
       bootSound.play();
-
       tl.to(bootText, { alpha: 1, duration: 1, delay: 0.5 })
         .to(progressFill, { width: barWidth - 4, duration: 2, ease: 'power1.inOut' }, '-=0.5')
         .to(bootContainer, { alpha: 0, duration: 0.5, onComplete: () => bootContainer.destroy() });
     };
 
-    init();
+    setup();
 
-    // Cleanup function
+    // The cleanup function closes over the resources created in this effect run.
     return () => {
-      gsapTimelineRef.current?.kill();
-      howlerRef.current?.stop();
-      if (pixiAppRef.current) {
-        pixiAppRef.current.destroy(true, true);
-        pixiAppRef.current = null;
-      }
+      // The `app` variable and others will be undefined if setup() didn't run or bailed early.
+      // The checks prevent errors if cleanup runs before setup is complete.
+      tl?.kill();
+      bootSound?.stop();
+      app?.destroy(true, true);
       setIsInitialized(false);
     };
   }, [canvasRef]);
