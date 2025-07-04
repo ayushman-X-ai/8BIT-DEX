@@ -330,7 +330,7 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
                             const speciesRes = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${correctOption.id}`);
                             if (!speciesRes.ok) throw new Error('Failed to fetch species data for TTS');
                             
-                            const speciesData: PokemonSpecies = await res.json();
+                            const speciesData: PokemonSpecies = await speciesRes.json();
                             const flavorText = getEnglishFlavorText(speciesData.flavor_text_entries);
                             const textToSpeak = `${correctOption.label}. ${flavorText}`;
 
@@ -634,7 +634,7 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
                             <p className="mb-2 font-bold text-destructive">Incorrect!</p>
                         )}
                         <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-2">
-                             <Button onClick={handleNextQuestion} size="lg" className="w-full sm:w-auto" disabled={isTransitionisTransitioning}>
+                             <Button onClick={handleNextQuestion} size="lg" className="w-full sm:w-auto" disabled={isTransitioning}>
                                 {isTransitioning ? 'Loading...' : (currentQuestionIndex === NUM_QUESTIONS - 1 ? 'Finish Quiz' : 'Next Question')}
                             </Button>
                             
@@ -653,9 +653,3 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
         </div>
     );
 }
-
-    
-
-    
-
-
