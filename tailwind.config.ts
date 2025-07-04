@@ -95,15 +95,6 @@ export default {
           '0%, 100%': { filter: 'drop-shadow(0 0 5px hsl(var(--destructive)))' },
           '50%': { filter: 'drop-shadow(0 0 15px hsl(var(--destructive)))' },
         },
-        'shake': {
-          '0%, 100%': { transform: 'translateX(0)' },
-          '20%, 60%': { transform: 'translateX(-5px)' },
-          '40%, 80%': { transform: 'translateX(5px)' },
-        },
-        'flash': {
-            '0%, 100%': { filter: 'brightness(1)' },
-            '50%': { filter: 'brightness(2)' },
-        }
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -111,8 +102,6 @@ export default {
         'scanline': 'scanline 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite',
         'pokeball-pulse': 'pokeball-pulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite',
         'villain-pulse': 'villain-pulse 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite',
-        'shake': 'shake 0.5s ease-in-out',
-        'flash': 'flash 0.5s ease-in-out',
       },
     },
   },
