@@ -168,7 +168,6 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
 
     // Audio State
     const [ttsAudioUrl, setTtsAudioUrl] = useState<string | null>(null);
-    const [ttsAudio, setTtsAudio] = useState<HTMLAudioElement | null>(null);
     const soundsRef = useRef<{
         select: Howl | null;
         correct: Howl | null;
@@ -236,15 +235,6 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
             setTimeout(() => setShowLevelUp(false), 3000);
         }
     }, [userData.xp, userData.level, xpForNextLevel]);
-
-     useEffect(() => {
-        if (ttsAudioUrl) {
-            const audio = new Audio(ttsAudioUrl);
-            setTtsAudio(audio);
-        } else {
-            setTtsAudio(null);
-        }
-    }, [ttsAudioUrl]);
 
     const generateQuestions = useCallback(async (mode: QuizMode) => {
         setGameState('generating');
@@ -649,17 +639,22 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
                                             Learn<span className="hidden sm:inline">&nbsp;More</span>
                                         </Button>
                                     </Link>
-                                    {ttsAudio && (
-                                    <Button 
+                                    {ttsAudioUrl && (
+                                        <Button 
                                             variant="secondary" 
                                             size="icon" 
                                             className="h-11 w-11 border-2 !border-foreground" 
-                                            onClick={() => ttsAudio?.play()}
+                                            onClick={() => {
+                                                if (ttsAudioUrl) {
+                                                    const audio = new Audio(ttsAudioUrl);
+                                                    audio.play();
+                                                }
+                                            }}
                                             aria-label="Play description"
                                         >
-                                        <Volume2 />
-                                    </Button>
-                                )}
+                                            <Volume2 />
+                                        </Button>
+                                    )}
                                 </div>
                             )}
                         </div>
