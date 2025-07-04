@@ -167,7 +167,7 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
     const [xpForNextLevel, setXpForNextLevel] = useState(calculateXpForNextLevel(1));
 
     // Audio State
-    const [ttsAudioUrl, setTtsAudioUrl] = useState<string | null>(null);
+    const [ttsAudio, setTtsAudio] = useState<HTMLAudioElement | null>(null);
     const soundsRef = useRef<{
         select: Howl | null;
         correct: Howl | null;
@@ -326,7 +326,7 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
 
                             const ttsResult = await textToSpeech(textToSpeak);
                             if (ttsResult.media) {
-                                setTtsAudioUrl(ttsResult.media);
+                                setTtsAudio(new Audio(ttsResult.media));
                             }
                         } catch (e) {
                             console.error("Failed to generate Pokémon description TTS", e);
@@ -384,7 +384,7 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
         setShowFeedback(false);
         setUserAnswerId(null);
         setLastXpGain(null);
-        setTtsAudioUrl(null);
+        setTtsAudio(null);
         if (currentQuestionIndex < NUM_QUESTIONS - 1) {
             setCurrentQuestionIndex(prev => prev + 1);
         } else {
@@ -423,23 +423,23 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
                 <h2 className="text-2xl sm:text-3xl font-headline mt-4">Select Difficulty</h2>
                 <p className="text-muted-foreground mt-2 mb-8">Choose your challenge level to begin.</p>
                 <div className="grid grid-cols-1 gap-4">
-                    <Button onClick={() => handleDifficultySelect('easy')} size="lg" variant="outline" className="h-auto py-3 sm:py-4 border-2 !border-foreground justify-start">
-                        <Star className="mr-2 sm:mr-4 h-6 w-6 sm:h-8 sm:w-8 text-green-500" />
-                        <div className="text-left">
+                    <Button onClick={() => handleDifficultySelect('easy')} variant="outline" className="h-auto p-3 sm:p-4 border-2 !border-foreground justify-start text-left">
+                        <Star className="mr-2 sm:mr-4 h-6 w-6 sm:h-8 sm:w-8 text-green-500 flex-shrink-0" />
+                        <div className="flex-shrink min-w-0">
                             <p className="font-bold text-sm sm:text-base">Easy</p>
                             <p className="font-normal text-xs text-muted-foreground">Generations I & II</p>
                         </div>
                     </Button>
-                    <Button onClick={() => handleDifficultySelect('medium')} size="lg" variant="outline" className="h-auto py-3 sm:py-4 border-2 !border-foreground justify-start">
-                        <Shield className="mr-2 sm:mr-4 h-6 w-6 sm:h-8 sm:w-8 text-yellow-500" />
-                        <div className="text-left">
+                    <Button onClick={() => handleDifficultySelect('medium')} variant="outline" className="h-auto p-3 sm:p-4 border-2 !border-foreground justify-start text-left">
+                        <Shield className="mr-2 sm:mr-4 h-6 w-6 sm:h-8 sm:w-8 text-yellow-500 flex-shrink-0" />
+                        <div className="flex-shrink min-w-0">
                             <p className="font-bold text-sm sm:text-base">Medium</p>
                             <p className="font-normal text-xs text-muted-foreground">Generations I - IV</p>
                         </div>
                     </Button>
-                    <Button onClick={() => handleDifficultySelect('hard')} size="lg" variant="outline" className="h-auto py-3 sm:py-4 border-2 !border-foreground justify-start">
-                        <Gem className="mr-2 sm:mr-4 h-6 w-6 sm:h-8 sm:w-8 text-red-500" />
-                        <div className="text-left">
+                    <Button onClick={() => handleDifficultySelect('hard')} variant="outline" className="h-auto p-3 sm:p-4 border-2 !border-foreground justify-start text-left">
+                        <Gem className="mr-2 sm:mr-4 h-6 w-6 sm:h-8 sm:w-8 text-red-500 flex-shrink-0" />
+                        <div className="flex-shrink min-w-0">
                             <p className="font-bold text-sm sm:text-base">Hard</p>
                             <p className="font-normal text-xs text-muted-foreground">All Generations</p>
                         </div>
@@ -457,23 +457,23 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
                     <h2 className="text-2xl sm:text-3xl font-headline mt-4">Choose Your Challenge!</h2>
                     <p className="text-muted-foreground mt-2 mb-8">Select a category to begin the quiz.</p>
                     <div className="grid grid-cols-1 gap-4">
-                        <Button onClick={() => handleModeSelect('identify-pokemon')} size="lg" variant="outline" className="h-auto py-3 sm:py-4 border-2 !border-foreground justify-start">
-                            <ImageIcon className="mr-2 sm:mr-4 h-6 w-6 sm:h-8 sm:w-8 text-primary" />
-                            <div className="text-left">
+                        <Button onClick={() => handleModeSelect('identify-pokemon')} variant="outline" className="h-auto p-3 sm:p-4 border-2 !border-foreground justify-start text-left">
+                            <ImageIcon className="mr-2 sm:mr-4 h-6 w-6 sm:h-8 sm:w-8 text-primary flex-shrink-0" />
+                            <div className="flex-shrink min-w-0">
                                 <p className="font-bold text-sm sm:text-base">Sprite Mode</p>
                                 <p className="font-normal text-xs text-muted-foreground">Guess the Pokémon from its picture.</p>
                             </div>
                         </Button>
-                        <Button onClick={() => handleModeSelect('type-matchup')} size="lg" variant="outline" className="h-auto py-3 sm:py-4 border-2 !border-foreground justify-start">
-                            <Swords className="mr-2 sm:mr-4 h-6 w-6 sm:h-8 sm:w-8 text-primary" />
-                            <div className="text-left">
+                        <Button onClick={() => handleModeSelect('type-matchup')} variant="outline" className="h-auto p-3 sm:p-4 border-2 !border-foreground justify-start text-left">
+                            <Swords className="mr-2 sm:mr-4 h-6 w-6 sm:h-8 sm:w-8 text-primary flex-shrink-0" />
+                            <div className="flex-shrink min-w-0">
                                 <p className="font-bold text-sm sm:text-base">Battle Mode</p>
                                 <p className="font-normal text-xs text-muted-foreground">Test your knowledge of type matchups.</p>
                             </div>
                         </Button>
-                        <Button onClick={() => handleModeSelect('mixed')} size="lg" variant="outline" className="h-auto py-3 sm:py-4 border-2 !border-foreground justify-start">
-                            <Shuffle className="mr-2 sm:mr-4 h-6 w-6 sm:h-8 sm:w-8 text-primary" />
-                            <div className="text-left">
+                        <Button onClick={() => handleModeSelect('mixed')} variant="outline" className="h-auto p-3 sm:p-4 border-2 !border-foreground justify-start text-left">
+                            <Shuffle className="mr-2 sm:mr-4 h-6 w-6 sm:h-8 sm:w-8 text-primary flex-shrink-0" />
+                            <div className="flex-shrink min-w-0">
                                 <p className="font-bold text-sm sm:text-base">Mystery Mode</p>
                                 <p className="font-normal text-xs text-muted-foreground">A random mix of all question types.</p>
                             </div>
@@ -639,17 +639,12 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
                                             Learn<span className="hidden sm:inline">&nbsp;More</span>
                                         </Button>
                                     </Link>
-                                    {ttsAudioUrl && (
+                                    {ttsAudio && (
                                         <Button 
                                             variant="secondary" 
                                             size="icon" 
                                             className="h-11 w-11 border-2 !border-foreground" 
-                                            onClick={() => {
-                                                if (ttsAudioUrl) {
-                                                    const audio = new Audio(ttsAudioUrl);
-                                                    audio.play();
-                                                }
-                                            }}
+                                            onClick={() => ttsAudio?.play()}
                                             aria-label="Play description"
                                         >
                                             <Volume2 />
