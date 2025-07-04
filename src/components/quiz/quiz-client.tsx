@@ -148,6 +148,7 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
     const [streak, setStreak] = useState(0);
     const [lastXpGain, setLastXpGain] = useState<number | null>(null);
     const [showLevelUp, setShowLevelUp] = useState(false);
+    const [isShaking, setIsShaking] = useState(false);
 
     // Player Progression State
     const [userData, setUserData] = useState<UserData>(defaultUserData);
@@ -284,6 +285,8 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
         } else {
             setStreak(0);
             setLastXpGain(0);
+            setIsShaking(true);
+            setTimeout(() => setIsShaking(false), 820);
         }
     };
     
@@ -424,7 +427,10 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
                 </div>
             </div>
 
-            <Card className="border-2 border-foreground bg-card p-4 sm:p-8">
+            <Card className={cn(
+                "border-2 border-foreground bg-card p-4 sm:p-8",
+                isShaking && 'animate-shake'
+            )}>
                 {currentQuestion.type === 'identify-pokemon' && (
                     <div className="relative w-48 h-48 sm:w-56 sm:h-56 mx-auto mb-6">
                         <Image
