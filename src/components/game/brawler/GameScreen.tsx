@@ -21,9 +21,10 @@ export default function GameScreen({ playerChar, opponentChar, onGameOver }: Gam
     const { player, opponent, gameTicks } = gameState;
 
     return (
-        <div className="w-full h-full relative overflow-hidden bg-gradient-to-b from-sky-400 to-sky-600">
-            {/* Arena Floor */}
-            <div className="absolute bottom-0 left-0 w-full h-1/4 bg-green-600 border-t-8 border-green-800" />
+        <div className="w-full h-full relative overflow-hidden bg-gradient-to-b from-slate-700 via-slate-900 to-black">
+            {/* Background elements */}
+            <div className="absolute top-[15%] left-[20%] w-24 h-24 bg-slate-100 rounded-full opacity-60 blur-2xl" />
+            <div className="absolute bottom-0 left-0 w-full h-[150px] bg-black/40" />
             
             <GameUI player={player} opponent={opponent} />
 
@@ -46,7 +47,7 @@ export default function GameScreen({ playerChar, opponentChar, onGameOver }: Gam
                     alt={player.name}
                     width={player.width}
                     height={player.height}
-                    className="object-contain"
+                    className="object-contain filter brightness-0 drop-shadow-[0_0_5px_hsl(var(--primary-foreground))]"
                 />
             </div>
 
@@ -69,35 +70,9 @@ export default function GameScreen({ playerChar, opponentChar, onGameOver }: Gam
                     alt={opponent.name}
                     width={opponent.width}
                     height={opponent.height}
-                    className="object-contain"
+                    className="object-contain filter brightness-0 drop-shadow-[0_0_5px_hsl(var(--primary-foreground))]"
                 />
             </div>
-
-            {/* Player Attack Hitbox (for visualization) */}
-            {player.isAttacking && (
-                 <div
-                    className="absolute bg-red-500/50"
-                    style={{
-                        width: player.activeAttack.width,
-                        height: player.activeAttack.height,
-                        left: player.activeAttack.x,
-                        bottom: player.activeAttack.y,
-                    }}
-                 />
-            )}
-
-             {/* Opponent Attack Hitbox (for visualization) */}
-            {opponent.isAttacking && (
-                <div
-                    className="absolute bg-blue-500/50"
-                    style={{
-                        width: opponent.activeAttack.width,
-                        height: opponent.activeAttack.height,
-                        left: opponent.activeAttack.x,
-                        bottom: opponent.activeAttack.y,
-                    }}
-                />
-            )}
         </div>
     );
 }

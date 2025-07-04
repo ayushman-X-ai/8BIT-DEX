@@ -33,23 +33,23 @@ export default function CharacterSelect({ onCharacterSelect }: CharacterSelectPr
     const selectedCharacter = CHARACTERS[selectedIndex];
 
     return (
-        <div className="w-full h-full bg-card flex flex-col items-center justify-center p-8 text-center text-white">
-            <h2 className="text-3xl font-headline text-primary uppercase tracking-widest mb-4">Choose Your Brawler</h2>
+        <div className="w-full h-full bg-slate-900 flex flex-col items-center justify-center p-8 text-center text-white">
+            <h2 className="text-3xl font-headline text-primary uppercase tracking-widest mb-4">Choose Your Fighter</h2>
             <div className="relative w-full max-w-xs flex items-center justify-center">
-                <Button variant="outline" size="icon" onClick={handlePrev} className="absolute -left-8 sm:-left-16">
+                <Button variant="outline" size="icon" onClick={handlePrev} className="absolute -left-8 sm:-left-16 bg-slate-800 border-slate-600 hover:bg-slate-700">
                     &lt;
                 </Button>
-                <div className="w-48 h-48 relative">
+                <div className="w-48 h-48 relative bg-gradient-to-b from-slate-700 via-black to-black p-4 border-2 border-slate-700">
                     <Image
                         src={selectedCharacter.spriteUrl}
                         alt={selectedCharacter.name}
                         width={192}
                         height={192}
-                        className="object-contain drop-shadow-lg animate-pulse"
-                        data-ai-hint="pokemon character"
+                        className="object-contain filter brightness-0 drop-shadow-[0_0_8px_white]"
+                        data-ai-hint="pokemon character silhouette"
                     />
                 </div>
-                <Button variant="outline" size="icon" onClick={handleNext} className="absolute -right-8 sm:-right-16">
+                <Button variant="outline" size="icon" onClick={handleNext} className="absolute -right-8 sm:-right-16 bg-slate-800 border-slate-600 hover:bg-slate-700">
                     &gt;
                 </Button>
             </div>
@@ -64,7 +64,7 @@ export default function CharacterSelect({ onCharacterSelect }: CharacterSelectPr
             </div>
 
             <Button onClick={() => onCharacterSelect(selectedCharacter)} className="mt-8 font-headline text-lg" size="lg">
-                Let&apos;s Brawl!
+                Enter the Shadows
             </Button>
         </div>
     );
