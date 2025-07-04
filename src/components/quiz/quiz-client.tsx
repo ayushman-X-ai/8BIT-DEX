@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import type { PokemonListResult, PokemonType } from '@/types/pokemon';
 import { capitalize } from '@/lib/pokemon-utils';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { CheckCircle, XCircle, Trophy, Loader2, BrainCircuit, Swords, Shuffle, Image as ImageIcon, Star, Shield, Gem } from 'lucide-react';
+import { CheckCircle, XCircle, Trophy, Loader2, BrainCircuit, Swords, Shuffle, Image as ImageIcon, Star, Shield, Gem, BookOpen } from 'lucide-react';
 
 // prettier-ignore
 const POKEMON_TYPES = [
@@ -540,9 +541,20 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
                         ) : (
                             <p className="mb-2 font-bold text-destructive">Incorrect!</p>
                         )}
-                        <Button onClick={handleNextQuestion} size="lg" className="w-full sm:w-auto">
-                            {currentQuestionIndex === NUM_QUESTIONS - 1 ? 'Finish Quiz' : 'Next Question'}
-                        </Button>
+                        <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-2">
+                            <Button onClick={handleNextQuestion} size="lg" className="w-full sm:w-auto">
+                                {currentQuestionIndex === NUM_QUESTIONS - 1 ? 'Finish Quiz' : 'Next Question'}
+                            </Button>
+                            
+                            {currentQuestion.type === 'identify-pokemon' && (
+                                <Link href={`/pokemon/${currentQuestion.correctAnswerId}`} className="w-full sm:w-auto">
+                                    <Button variant="secondary" size="lg" className="w-full border-2 !border-foreground">
+                                        <BookOpen className="mr-2" />
+                                        Learn More
+                                    </Button>
+                                </Link>
+                            )}
+                        </div>
                     </div>
                 )}
             </Card>
