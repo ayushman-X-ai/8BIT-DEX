@@ -4,14 +4,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import type { PokemonListResult, PokemonType } from '@/types/pokemon';
-import { capitalize } from '@/lib/pokemon-utils';
+import type { PokemonListResult, PokemonType, PokemonSpecies } from '@/types/pokemon';
+import { capitalize, getEnglishFlavorText } from '@/lib/pokemon-utils';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { CheckCircle, XCircle, Trophy, Loader2, BrainCircuit, Swords, Shuffle, Image as ImageIcon, Star, Shield, Gem, BookOpen } from 'lucide-react';
+import { textToSpeech } from '@/ai/flows/text-to-speech-flow';
 
 // prettier-ignore
 const POKEMON_TYPES = [
@@ -158,7 +159,7 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
     const [streak, setStreak] = useState(0);
     const [lastXpGain, setLastXpGain] = useState<number | null>(null);
     const [showLevelUp, setShowLevelUp] = useState(false);
-    const [isShaking, setIsShaking] = useState(false);
+    const [isShaking, setIsShaking] = useState(isShaking);
 
     // Player Progression State
     const [userData, setUserData] = useState<UserData>(defaultUserData);
@@ -267,9 +268,34 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
         setUserAnswerId(answerId);
         setShowFeedback(true);
 
-        const isCorrect = answerId === questions[currentQuestionIndex].correctAnswerId;
+        const currentQuestion = questions[currentQuestionIndex];
+        const isCorrect = answerId === currentQuestion.correctAnswerId;
 
         if (isCorrect) {
+            // TTS for correct identify-pokemon question
+            if (currentQuestion.type === 'identify-pokemon') {
+                const correctOption = currentQuestion.options.find(opt => opt.id === currentQuestion.correctAnswerId);
+                if (correctOption) {
+                    (async () => {
+                        try {
+                            const speciesRes = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${correctOption.id}`);
+                            if (!speciesRes.ok) throw new Error('Failed to fetch species data for TTS');
+                            
+                            const speciesData: PokemonSpecies = await speciesRes.json();
+                            const flavorText = getEnglishFlavorText(speciesData.flavor_text_entries);
+                            const textToSpeak = `${correctOption.label}. ${flavorText}`;
+
+                            const ttsResult = await textToSpeech(textToSpeak);
+                            if (ttsResult.media) {
+                                new Audio(ttsResult.media).play();
+                            }
+                        } catch (e) {
+                            console.error("Failed to play Pokémon description TTS", e);
+                        }
+                    })();
+                }
+            }
+
             const newStreak = streak + 1;
             const xpGain = XP_FOR_CORRECT + (newStreak >= 2 ? (newStreak * XP_FOR_STREAK_BONUS) : 0);
             const newTotalCorrect = userData.totalCorrectAnswers + 1;
@@ -561,5 +587,7 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
         </div>
     );
 }
+
+    
 
     
