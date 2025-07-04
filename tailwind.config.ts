@@ -87,17 +87,11 @@ export default {
           '0%': { top: '-10%' },
           '100%': { top: '110%' },
         },
-        'shake': {
-            '0%, 100%': { transform: 'translateX(0) scaleX(var(--tw-scale-x, 1))' },
-            '10%, 30%, 50%, 70%, 90%': { transform: 'translateX(-5px) scaleX(var(--tw-scale-x, 1))' },
-            '20%, 40%, 60%, 80%': { transform: 'translateX(5px) scaleX(var(--tw-scale-x, 1))' },
-        }
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'scanline': 'scanline 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite',
-        'shake': 'shake 0.25s ease-in-out',
       },
     },
   },
