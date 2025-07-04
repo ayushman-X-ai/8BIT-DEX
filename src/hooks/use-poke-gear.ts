@@ -8,16 +8,14 @@ import type { AppIcon } from '@/types/dex-arcade';
 
 export const usePokeGear = (canvasRef: React.RefObject<HTMLDivElement>) => {
   const [isInitialized, setIsInitialized] = useState(false);
-  
+  const appRef = useRef<Application | null>(null);
+  const bootSoundRef = useRef<Howl | null>(null);
+  const timelineRef = useRef<gsap.core.Timeline | null>(null);
+
   useEffect(() => {
-    if (!canvasRef.current) {
+    if (!canvasRef.current || appRef.current) {
       return;
     }
-    
-    // This effect creates and manages its own resources.
-    let app: Application;
-    let bootSound: Howl;
-    let tl: gsap.core.Timeline;
 
     const createHomeScreen = (app: Application) => {
         const homeContainer = new Container();
@@ -113,19 +111,20 @@ export const usePokeGear = (canvasRef: React.RefObject<HTMLDivElement>) => {
       const currentCanvas = canvasRef.current;
       if (!currentCanvas) return;
 
-      app = new Application();
-      
-      bootSound = new Howl({
+      const app = new Application();
+      appRef.current = app;
+
+      bootSoundRef.current = new Howl({
         src: ['/audio/boot.mp3', '/audio/boot.ogg'],
         volume: 0.5,
         onerror: (id, err) => console.log('Howler error:', err),
       });
 
-      tl = gsap.timeline({
+      timelineRef.current = gsap.timeline({
         onComplete: () => {
           setIsInitialized(true);
-          if (app) {
-            createHomeScreen(app);
+          if (appRef.current) {
+            createHomeScreen(appRef.current);
           }
         },
       });
@@ -137,9 +136,8 @@ export const usePokeGear = (canvasRef: React.RefObject<HTMLDivElement>) => {
       });
 
       if (!canvasRef.current) {
-        tl.kill();
-        bootSound.stop();
         app.destroy(true, true);
+        appRef.current = null;
         return;
       }
 
@@ -179,8 +177,9 @@ export const usePokeGear = (canvasRef: React.RefObject<HTMLDivElement>) => {
       progressFill.rect(2, 2, 0, barHeight - 4).fill({color: '#306230'});
       progressBar.addChild(progressFill);
 
-      bootSound.play();
-      tl.to(bootText, { alpha: 1, duration: 1, delay: 0.5 })
+      bootSoundRef.current.play();
+      timelineRef.current
+        .to(bootText, { alpha: 1, duration: 1, delay: 0.5 })
         .to(progressFill, { width: barWidth - 4, duration: 2, ease: 'power1.inOut' }, '-=0.5')
         .to(bootContainer, { alpha: 0, duration: 0.5, onComplete: () => bootContainer.destroy() });
     };
@@ -188,9 +187,12 @@ export const usePokeGear = (canvasRef: React.RefObject<HTMLDivElement>) => {
     setup();
 
     return () => {
-      tl?.kill();
-      bootSound?.stop();
-      app?.destroy(true, true);
+      timelineRef.current?.kill();
+      bootSoundRef.current?.stop();
+      if (appRef.current) {
+        appRef.current.destroy(true, true);
+        appRef.current = null;
+      }
       setIsInitialized(false);
     };
   }, [canvasRef]);
