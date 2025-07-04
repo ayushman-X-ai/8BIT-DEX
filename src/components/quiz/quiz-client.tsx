@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -8,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { CheckCircle, XCircle, Award, Loader2, BrainCircuit, Swords, Shuffle, Image as ImageIcon } from 'lucide-react';
+import { CheckCircle, XCircle, Trophy, Loader2, BrainCircuit, Swords, Shuffle, Image as ImageIcon } from 'lucide-react';
 
 // prettier-ignore
 const POKEMON_TYPES = [
@@ -33,6 +34,11 @@ type QuizQuestion = {
 };
 
 const NUM_QUESTIONS = 10;
+const XP_FOR_CORRECT = 15;
+const XP_FOR_STREAK_BONUS = 5;
+const LOCAL_STORAGE_KEY = 'quizDexUserData';
+
+const calculateXpForNextLevel = (level: number) => Math.floor(100 * Math.pow(level, 1.5));
 
 // Utility to get the ID from a Pokémon URL
 const getIdFromUrl = (url: string) => {
@@ -104,12 +110,63 @@ const generateTypeMatchupQuestion = async (): Promise<QuizQuestion | null> => {
 };
 
 export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResult[] }) {
+    // Quiz state
     const [questions, setQuestions] = useState<QuizQuestion[]>([]);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [score, setScore] = useState(0);
     const [userAnswerId, setUserAnswerId] = useState<number | string | null>(null);
     const [showFeedback, setShowFeedback] = useState(false);
     const [gameState, setGameState] = useState<'loading' | 'selecting' | 'generating' | 'playing' | 'finished'>('loading');
+
+    // Player Progression State
+    const [level, setLevel] = useState(1);
+    const [xp, setXp] = useState(0);
+    const [xpForNextLevel, setXpForNextLevel] = useState(calculateXpForNextLevel(1));
+    const [streak, setStreak] = useState(0);
+    const [lastXpGain, setLastXpGain] = useState<number | null>(null);
+    const [showLevelUp, setShowLevelUp] = useState(false);
+
+    // Load data from localStorage on component mount
+    useEffect(() => {
+        try {
+            const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (savedData) {
+                const { level: savedLevel, xp: savedXp } = JSON.parse(savedData);
+                if (typeof savedLevel === 'number' && typeof savedXp === 'number') {
+                    setLevel(savedLevel);
+                    setXp(savedXp);
+                    setXpForNextLevel(calculateXpForNextLevel(savedLevel));
+                }
+            }
+        } catch (error) {
+            console.error("Failed to load user data from localStorage", error);
+        }
+    }, []);
+
+    // Save data to localStorage whenever level or XP changes
+    useEffect(() => {
+        try {
+            const userData = JSON.stringify({ level, xp });
+            localStorage.setItem(LOCAL_STORAGE_KEY, userData);
+        } catch (error) {
+            console.error("Failed to save user data to localStorage", error);
+        }
+    }, [level, xp]);
+    
+    // Check for level-up whenever XP changes
+    useEffect(() => {
+        if (xp >= xpForNextLevel) {
+            const newLevel = level + 1;
+            const remainingXp = xp - xpForNextLevel;
+            
+            setLevel(newLevel);
+            setXp(remainingXp);
+            setXpForNextLevel(calculateXpForNextLevel(newLevel));
+            
+            setShowLevelUp(true);
+            setTimeout(() => setShowLevelUp(false), 3000);
+        }
+    }, [xp, level, xpForNextLevel]);
 
     const generateQuestions = useCallback(async (mode: QuizMode) => {
         setGameState('generating');
@@ -164,15 +221,25 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
         if (showFeedback) return;
         
         setUserAnswerId(answerId);
+        setShowFeedback(true);
+
         if (answerId === questions[currentQuestionIndex].correctAnswerId) {
             setScore(prev => prev + 1);
+            const newStreak = streak + 1;
+            const xpGain = XP_FOR_CORRECT + (newStreak * XP_FOR_STREAK_BONUS);
+            setXp(prev => prev + xpGain);
+            setLastXpGain(xpGain);
+            setStreak(newStreak);
+        } else {
+            setStreak(0);
+            setLastXpGain(0);
         }
-        setShowFeedback(true);
     };
     
     const handleNextQuestion = () => {
         setShowFeedback(false);
         setUserAnswerId(null);
+        setLastXpGain(null);
         if (currentQuestionIndex < NUM_QUESTIONS - 1) {
             setCurrentQuestionIndex(prev => prev + 1);
         } else {
@@ -186,6 +253,8 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
         setUserAnswerId(null);
         setShowFeedback(false);
         setQuestions([]);
+        setStreak(0);
+        setLastXpGain(null);
         setGameState('selecting');
     };
 
@@ -243,10 +312,14 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
     if (gameState === 'finished') {
         return (
             <Card className="w-full max-w-2xl p-6 sm:p-8 text-center border-2 border-foreground bg-card">
-                <Award className="w-16 h-16 mx-auto text-accent" />
+                <Trophy className="w-16 h-16 mx-auto text-accent" />
                 <h2 className="text-2xl sm:text-3xl font-headline mt-4">Quiz Complete!</h2>
-                <p className="text-muted-foreground mt-2">You scored</p>
+                <p className="text-muted-foreground mt-2">Final Score</p>
                 <p className="text-5xl font-bold font-headline my-4 text-primary">{score} / {NUM_QUESTIONS}</p>
+                <div className="mb-8 text-lg">
+                    <p>Level: <span className="font-bold text-accent">{level}</span></p>
+                    <p className="text-sm text-muted-foreground">{xp} / {xpForNextLevel} XP</p>
+                </div>
                 <Button onClick={restartQuiz} size="lg">
                     Play Again
                 </Button>
@@ -257,13 +330,25 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
     const currentQuestion = questions[currentQuestionIndex];
     
     return (
-        <div className="w-full max-w-2xl">
+        <div className="w-full max-w-2xl relative">
+            {showLevelUp && (
+                <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-20 animate-bounce">
+                    <p className="font-headline text-2xl text-yellow-400 drop-shadow-[2px_2px_0_hsl(var(--foreground))]">LEVEL UP!</p>
+                </div>
+            )}
+            <div className="mb-4 space-y-2">
+                <div className="flex justify-between items-baseline font-code text-xs">
+                    <p>Level: <span className="font-bold text-accent">{level}</span></p>
+                    <p>XP: <span className="font-bold">{xp} / {xpForNextLevel}</span></p>
+                </div>
+                <Progress value={(xp / xpForNextLevel) * 100} className="h-2" />
+            </div>
+
             <div className="mb-4 space-y-2">
                 <div className="flex justify-between items-baseline font-code text-xs">
                     <p>Score: <span className="font-bold text-accent">{score}</span></p>
                     <p>Question: <span className="font-bold">{currentQuestionIndex + 1} / {NUM_QUESTIONS}</span></p>
                 </div>
-                <Progress value={((currentQuestionIndex + 1) / NUM_QUESTIONS) * 100} />
             </div>
 
             <Card className="border-2 border-foreground bg-card p-4 sm:p-8">
@@ -318,6 +403,14 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
                 
                 {showFeedback && (
                     <div className="mt-6 text-center">
+                        {lastXpGain !== null && lastXpGain > 0 ? (
+                            <p className="mb-2 font-bold text-chart-4">
+                                Correct! +{lastXpGain} XP
+                                {streak > 1 && <span className="text-yellow-500"> ({streak}x Streak!)</span>}
+                            </p>
+                        ) : (
+                            <p className="mb-2 font-bold text-destructive">Incorrect!</p>
+                        )}
                         <Button onClick={handleNextQuestion} size="lg" className="w-full sm:w-auto">
                             {currentQuestionIndex === NUM_QUESTIONS - 1 ? 'Finish Quiz' : 'Next Question'}
                         </Button>
@@ -327,3 +420,4 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
         </div>
     );
 }
+
