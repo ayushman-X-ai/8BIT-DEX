@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { PokemonListResult, PokemonType, PokemonSpecies } from '@/types/pokemon';
@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { CheckCircle, XCircle, Trophy, Loader2, BrainCircuit, Swords, Shuffle, Image as ImageIcon, Star, Shield, Gem, BookOpen } from 'lucide-react';
 import { textToSpeech } from '@/ai/flows/text-to-speech-flow';
+import type { Howl } from 'howler';
 
 // prettier-ignore
 const POKEMON_TYPES = [
@@ -165,6 +166,48 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
     const [userData, setUserData] = useState<UserData>(defaultUserData);
     const [xpForNextLevel, setXpForNextLevel] = useState(calculateXpForNextLevel(1));
 
+    // Audio State
+    const soundsRef = useRef<{
+        select: Howl | null;
+        correct: Howl | null;
+        incorrect: Howl | null;
+        music: Howl | null;
+    }>({ select: null, correct: null, incorrect: null, music: null });
+
+    // Initialize sounds client-side
+    useEffect(() => {
+        import('howler').then(({ Howl }) => {
+            if (!soundsRef.current.select) { // Prevent re-init on hot reloads
+                soundsRef.current.select = new Howl({ src: ['/audio/quiz-select.mp3'], volume: 0.5 });
+                soundsRef.current.correct = new Howl({ src: ['/audio/quiz-correct.mp3'], volume: 0.7 });
+                soundsRef.current.incorrect = new Howl({ src: ['/audio/quiz-incorrect.mp3'], volume: 0.7 });
+                soundsRef.current.music = new Howl({
+                    src: ['/audio/quiz-music.mp3'],
+                    volume: 0.2,
+                    loop: true,
+                    autoplay: false,
+                });
+            }
+        });
+
+        return () => {
+            Object.values(soundsRef.current).forEach(sound => sound?.unload());
+            soundsRef.current = { select: null, correct: null, incorrect: null, music: null };
+        };
+    }, []);
+
+    // Music controller
+    useEffect(() => {
+        const music = soundsRef.current.music;
+        if (!music) return;
+        
+        if (['generating', 'playing'].includes(gameState) && !music.playing()) {
+            music.play();
+        } else if (!['generating', 'playing'].includes(gameState) && music.playing()) {
+            music.stop();
+        }
+    }, [gameState]);
+
 
     // Load data from localStorage on component mount
     useEffect(() => {
@@ -254,17 +297,20 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
     }, [allPokemon, gameState]);
 
     const handleDifficultySelect = (selectedDifficulty: Difficulty) => {
+        soundsRef.current.select?.play();
         setDifficulty(selectedDifficulty);
         setGameState('selecting-mode');
     };
 
     const handleModeSelect = (mode: QuizMode) => {
+        soundsRef.current.select?.play();
         generateQuestions(mode);
     }
     
     const handleAnswer = (answerId: number | string) => {
         if (showFeedback) return;
         
+        soundsRef.current.select?.play();
         setUserAnswerId(answerId);
         setShowFeedback(true);
 
@@ -272,6 +318,8 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
         const isCorrect = answerId === currentQuestion.correctAnswerId;
 
         if (isCorrect) {
+            soundsRef.current.correct?.play();
+
             // TTS for correct identify-pokemon question
             if (currentQuestion.type === 'identify-pokemon') {
                 const correctOption = currentQuestion.options.find(opt => opt.id === currentQuestion.correctAnswerId);
@@ -327,6 +375,7 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
                 achievements: newAchievements,
             }));
         } else {
+            soundsRef.current.incorrect?.play();
             setStreak(0);
             setLastXpGain(0);
             setIsShaking(true);
@@ -335,6 +384,7 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
     };
     
     const handleNextQuestion = () => {
+        soundsRef.current.select?.play();
         setShowFeedback(false);
         setUserAnswerId(null);
         setLastXpGain(null);
@@ -346,6 +396,7 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
     };
     
     const restartQuiz = () => {
+        soundsRef.current.select?.play();
         setScore(0);
         setCurrentQuestionIndex(0);
         setUserAnswerId(null);
