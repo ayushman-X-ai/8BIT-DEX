@@ -7,23 +7,22 @@ import { Howl } from 'howler';
 import type { PokeGearLibs } from '@/types/dex-arcade';
 
 export const usePokeGear = (canvasRef: React.RefObject<HTMLDivElement>) => {
-  const [libs, setLibs] = useState<PokeGearLibs>({
-    pixiApp: null,
-    howler: null,
-    matterEngine: null,
-    gsapTimeline: null,
-  });
+  const pixiAppRef = useRef<Application | null>(null);
+  const howlerRef = useRef<Howl | null>(null);
+  const gsapTimelineRef = useRef<gsap.core.Timeline | null>(null);
+  
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    if (!canvasRef.current || libs.pixiApp) return;
+    // Only run if the canvas is ready and the app hasn't been created yet.
+    if (!canvasRef.current || pixiAppRef.current) return;
 
     let app: Application;
-    let bootSound: Howl;
 
     const init = async () => {
-      // Initialize PixiJS
       app = new Application();
+      pixiAppRef.current = app; // Store instance in ref
+
       await app.init({
         resizeTo: canvasRef.current!,
         backgroundAlpha: 0,
@@ -31,13 +30,12 @@ export const usePokeGear = (canvasRef: React.RefObject<HTMLDivElement>) => {
       });
       canvasRef.current!.appendChild(app.canvas);
       
-      // Initialize Howler
-      // Note: A real implementation would require actual audio files at these paths.
-      bootSound = new Howl({
+      const bootSound = new Howl({
         src: ['/audio/boot.mp3', '/audio/boot.ogg'],
         volume: 0.5,
         onerror: (id, err) => console.log('Howler error:', err),
       });
+      howlerRef.current = bootSound;
 
       // --- Create Boot Sequence ---
       const bootContainer = new Container();
@@ -80,30 +78,25 @@ export const usePokeGear = (canvasRef: React.RefObject<HTMLDivElement>) => {
           // Transition to main menu would happen here
         },
       });
+      gsapTimelineRef.current = tl;
 
       bootSound.play();
 
       tl.to(bootText, { alpha: 1, duration: 1, delay: 0.5 })
         .to(progressFill, { width: barWidth - 4, duration: 2, ease: 'power1.inOut' }, '-=0.5')
         .to(bootContainer, { alpha: 0, duration: 0.5, onComplete: () => bootContainer.destroy() });
-
-      setLibs({
-        pixiApp: app,
-        howler: bootSound,
-        matterEngine: null,
-        gsapTimeline: tl,
-      });
     };
 
     init();
 
+    // Cleanup function
     return () => {
-      libs.gsapTimeline?.kill();
-      libs.howler?.stop();
-      if (app) {
-        app.destroy(true, true);
+      gsapTimelineRef.current?.kill();
+      howlerRef.current?.stop();
+      if (pixiAppRef.current) {
+        pixiAppRef.current.destroy(true, true);
+        pixiAppRef.current = null;
       }
-      setLibs({ pixiApp: null, howler: null, matterEngine: null, gsapTimeline: null });
       setIsInitialized(false);
     };
   }, [canvasRef]);
