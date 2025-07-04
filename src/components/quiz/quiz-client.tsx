@@ -160,7 +160,8 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
     const [streak, setStreak] = useState(0);
     const [lastXpGain, setLastXpGain] = useState<number | null>(null);
     const [showLevelUp, setShowLevelUp] = useState(false);
-    const [isShaking, setIsShaking] = useState(isShaking);
+    const [isShaking, setIsShaking] = useState(false);
+    const [isTransitioning, setIsTransitioning] = useState(false);
 
     // Player Progression State
     const [userData, setUserData] = useState<UserData>(defaultUserData);
@@ -308,7 +309,7 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
     }
     
     const handleAnswer = (answerId: number | string) => {
-        if (showFeedback) return;
+        if (showFeedback || isTransitioning) return;
         
         soundsRef.current.select?.play();
         setUserAnswerId(answerId);
@@ -382,9 +383,14 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
             setTimeout(() => setIsShaking(false), 820);
         }
     };
-    
+
     const handleNextQuestion = () => {
+        if (isTransitioning) return;
         soundsRef.current.select?.play();
+        setIsTransitioning(true); // Triggers fade-out
+    };
+    
+    const advanceQuestionState = () => {
         setShowFeedback(false);
         setUserAnswerId(null);
         setLastXpGain(null);
@@ -393,6 +399,7 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
         } else {
             setGameState('finished');
         }
+        setIsTransitioning(false);
     };
     
     const restartQuiz = () => {
@@ -555,10 +562,18 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
                 </div>
             </div>
 
-            <Card className={cn(
-                "border-2 border-foreground bg-card p-4 sm:p-8",
-                isShaking && 'animate-shake'
-            )}>
+            <Card
+                onAnimationEnd={() => {
+                    if (isTransitioning) {
+                        advanceQuestionState();
+                    }
+                }}
+                className={cn(
+                    "border-2 border-foreground bg-card p-4 sm:p-8",
+                    isShaking && 'animate-shake',
+                    isTransitioning ? 'animate-fade-out' : 'animate-fade-in'
+                )}
+            >
                 {currentQuestion.type === 'identify-pokemon' && (
                     <div className="relative w-48 h-48 sm:w-56 sm:h-56 mx-auto mb-6">
                         <Image
@@ -619,8 +634,8 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
                             <p className="mb-2 font-bold text-destructive">Incorrect!</p>
                         )}
                         <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-2">
-                            <Button onClick={handleNextQuestion} size="lg" className="w-full sm:w-auto">
-                                {currentQuestionIndex === NUM_QUESTIONS - 1 ? 'Finish Quiz' : 'Next Question'}
+                             <Button onClick={handleNextQuestion} size="lg" className="w-full sm:w-auto" disabled={isTransitioning}>
+                                {isTransitioning ? 'Loading...' : (currentQuestionIndex === NUM_QUESTIONS - 1 ? 'Finish Quiz' : 'Next Question')}
                             </Button>
                             
                             {currentQuestion.type === 'identify-pokemon' && (
@@ -642,3 +657,4 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
     
 
     
+
