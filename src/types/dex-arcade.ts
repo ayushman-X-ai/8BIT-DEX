@@ -14,5 +14,4 @@ export interface AppIcon {
   id: string;
   name: string;
   unlocked: boolean;
-  component: React.ComponentType; // Or a string identifier
 }
