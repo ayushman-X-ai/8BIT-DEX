@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
@@ -11,7 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { CheckCircle, XCircle, Trophy, Loader2, BrainCircuit, Swords, Shuffle, Image as ImageIcon, Star, Shield, Gem, BookOpen } from 'lucide-react';
+import { CheckCircle, XCircle, Trophy, Loader2, BrainCircuit, Swords, Shuffle, Image as ImageIcon, Star, Shield, Gem, BookOpen, Volume2 } from 'lucide-react';
 import { textToSpeech } from '@/ai/flows/text-to-speech-flow';
 import type { Howl } from 'howler';
 
@@ -168,6 +167,7 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
     const [xpForNextLevel, setXpForNextLevel] = useState(calculateXpForNextLevel(1));
 
     // Audio State
+    const [ttsAudioUrl, setTtsAudioUrl] = useState<string | null>(null);
     const soundsRef = useRef<{
         select: Howl | null;
         correct: Howl | null;
@@ -321,7 +321,6 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
         if (isCorrect) {
             soundsRef.current.correct?.play();
 
-            // TTS for correct identify-pokemon question
             if (currentQuestion.type === 'identify-pokemon') {
                 const correctOption = currentQuestion.options.find(opt => opt.id === currentQuestion.correctAnswerId);
                 if (correctOption) {
@@ -336,10 +335,10 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
 
                             const ttsResult = await textToSpeech(textToSpeak);
                             if (ttsResult.media) {
-                                new Audio(ttsResult.media).play();
+                                setTtsAudioUrl(ttsResult.media);
                             }
                         } catch (e) {
-                            console.error("Failed to play Pokémon description TTS", e);
+                            console.error("Failed to generate Pokémon description TTS", e);
                         }
                     })();
                 }
@@ -394,6 +393,7 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
         setShowFeedback(false);
         setUserAnswerId(null);
         setLastXpGain(null);
+        setTtsAudioUrl(null);
         if (currentQuestionIndex < NUM_QUESTIONS - 1) {
             setCurrentQuestionIndex(prev => prev + 1);
         } else {
@@ -430,24 +430,24 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
                 <h2 className="text-2xl sm:text-3xl font-headline mt-4">Select Difficulty</h2>
                 <p className="text-muted-foreground mt-2 mb-8">Choose your challenge level to begin.</p>
                 <div className="grid grid-cols-1 gap-4">
-                    <Button onClick={() => handleDifficultySelect('easy')} size="lg" variant="outline" className="h-auto py-4 border-2 !border-foreground justify-start">
-                        <Star className="mr-4 h-8 w-8 text-green-500" />
+                    <Button onClick={() => handleDifficultySelect('easy')} size="lg" variant="outline" className="h-auto py-3 sm:py-4 border-2 !border-foreground justify-start">
+                        <Star className="mr-2 sm:mr-4 h-6 w-6 sm:h-8 sm:w-8 text-green-500" />
                         <div className="text-left">
-                            <p className="font-bold text-base">Easy</p>
+                            <p className="font-bold text-sm sm:text-base">Easy</p>
                             <p className="font-normal text-xs text-muted-foreground">Generations I & II</p>
                         </div>
                     </Button>
-                    <Button onClick={() => handleDifficultySelect('medium')} size="lg" variant="outline" className="h-auto py-4 border-2 !border-foreground justify-start">
-                        <Shield className="mr-4 h-8 w-8 text-yellow-500" />
+                    <Button onClick={() => handleDifficultySelect('medium')} size="lg" variant="outline" className="h-auto py-3 sm:py-4 border-2 !border-foreground justify-start">
+                        <Shield className="mr-2 sm:mr-4 h-6 w-6 sm:h-8 sm:w-8 text-yellow-500" />
                         <div className="text-left">
-                            <p className="font-bold text-base">Medium</p>
+                            <p className="font-bold text-sm sm:text-base">Medium</p>
                             <p className="font-normal text-xs text-muted-foreground">Generations I - IV</p>
                         </div>
                     </Button>
-                    <Button onClick={() => handleDifficultySelect('hard')} size="lg" variant="outline" className="h-auto py-4 border-2 !border-foreground justify-start">
-                        <Gem className="mr-4 h-8 w-8 text-red-500" />
+                    <Button onClick={() => handleDifficultySelect('hard')} size="lg" variant="outline" className="h-auto py-3 sm:py-4 border-2 !border-foreground justify-start">
+                        <Gem className="mr-2 sm:mr-4 h-6 w-6 sm:h-8 sm:w-8 text-red-500" />
                         <div className="text-left">
-                            <p className="font-bold text-base">Hard</p>
+                            <p className="font-bold text-sm sm:text-base">Hard</p>
                             <p className="font-normal text-xs text-muted-foreground">All Generations</p>
                         </div>
                     </Button>
@@ -464,24 +464,24 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
                     <h2 className="text-2xl sm:text-3xl font-headline mt-4">Choose Your Challenge!</h2>
                     <p className="text-muted-foreground mt-2 mb-8">Select a category to begin the quiz.</p>
                     <div className="grid grid-cols-1 gap-4">
-                        <Button onClick={() => handleModeSelect('identify-pokemon')} size="lg" variant="outline" className="h-auto py-4 border-2 !border-foreground justify-start">
-                            <ImageIcon className="mr-4 h-8 w-8 text-primary" />
+                        <Button onClick={() => handleModeSelect('identify-pokemon')} size="lg" variant="outline" className="h-auto py-3 sm:py-4 border-2 !border-foreground justify-start">
+                            <ImageIcon className="mr-2 sm:mr-4 h-6 w-6 sm:h-8 sm:w-8 text-primary" />
                             <div className="text-left">
-                                <p className="font-bold text-base">Sprite Mode</p>
+                                <p className="font-bold text-sm sm:text-base">Sprite Mode</p>
                                 <p className="font-normal text-xs text-muted-foreground">Guess the Pokémon from its picture.</p>
                             </div>
                         </Button>
-                        <Button onClick={() => handleModeSelect('type-matchup')} size="lg" variant="outline" className="h-auto py-4 border-2 !border-foreground justify-start">
-                            <Swords className="mr-4 h-8 w-8 text-primary" />
+                        <Button onClick={() => handleModeSelect('type-matchup')} size="lg" variant="outline" className="h-auto py-3 sm:py-4 border-2 !border-foreground justify-start">
+                            <Swords className="mr-2 sm:mr-4 h-6 w-6 sm:h-8 sm:w-8 text-primary" />
                             <div className="text-left">
-                                <p className="font-bold text-base">Battle Mode</p>
+                                <p className="font-bold text-sm sm:text-base">Battle Mode</p>
                                 <p className="font-normal text-xs text-muted-foreground">Test your knowledge of type matchups.</p>
                             </div>
                         </Button>
-                        <Button onClick={() => handleModeSelect('mixed')} size="lg" variant="outline" className="h-auto py-4 border-2 !border-foreground justify-start">
-                            <Shuffle className="mr-4 h-8 w-8 text-primary" />
+                        <Button onClick={() => handleModeSelect('mixed')} size="lg" variant="outline" className="h-auto py-3 sm:py-4 border-2 !border-foreground justify-start">
+                            <Shuffle className="mr-2 sm:mr-4 h-6 w-6 sm:h-8 sm:w-8 text-primary" />
                             <div className="text-left">
-                                <p className="font-bold text-base">Mystery Mode</p>
+                                <p className="font-bold text-sm sm:text-base">Mystery Mode</p>
                                 <p className="font-normal text-xs text-muted-foreground">A random mix of all question types.</p>
                             </div>
                         </Button>
@@ -634,17 +634,30 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
                             <p className="mb-2 font-bold text-destructive">Incorrect!</p>
                         )}
                         <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-2">
-                             <Button onClick={handleNextQuestion} size="lg" className="w-full sm:w-auto" disabled={isTransitioning}>
+                            <Button onClick={handleNextQuestion} size="lg" className="w-full sm:w-auto" disabled={isTransitioning}>
                                 {isTransitioning ? 'Loading...' : (currentQuestionIndex === NUM_QUESTIONS - 1 ? 'Finish Quiz' : 'Next Question')}
                             </Button>
                             
-                            {currentQuestion.type === 'identify-pokemon' && (
-                                <Link href={`/pokemon/${currentQuestion.correctAnswerId}`} className="w-full sm:w-auto">
-                                    <Button variant="secondary" size="lg" className="w-full border-2 !border-foreground">
-                                        <BookOpen className="mr-2" />
-                                        Learn More
+                            {currentQuestion.type === 'identify-pokemon' && showFeedback && (
+                                <div className="flex w-full sm:w-auto gap-2">
+                                    <Link href={`/pokemon/${currentQuestion.correctAnswerId}`} className="flex-grow">
+                                        <Button variant="secondary" size="lg" className="w-full border-2 !border-foreground">
+                                            <BookOpen className="mr-2" />
+                                            Learn<span className="hidden sm:inline">&nbsp;More</span>
+                                        </Button>
+                                    </Link>
+                                    {ttsAudioUrl && (
+                                    <Button 
+                                            variant="secondary" 
+                                            size="icon" 
+                                            className="h-11 w-11 border-2 !border-foreground" 
+                                            onClick={() => new Audio(ttsAudioUrl).play()}
+                                            aria-label="Play description"
+                                        >
+                                        <Volume2 />
                                     </Button>
-                                </Link>
+                                )}
+                                </div>
                             )}
                         </div>
                     </div>

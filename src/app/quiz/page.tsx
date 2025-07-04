@@ -40,7 +40,7 @@ export default async function QuizPage() {
                         <Link href="/" aria-label="Back to 8BitDex">
                             <Button variant="outline" size="xs" className="border-2 border-foreground">
                             <ArrowLeft />
-                            Back
+                            <span className="hidden sm:inline">Back</span>
                             </Button>
                         </Link>
                     </div>
@@ -62,12 +62,12 @@ export default async function QuizPage() {
   return (
     <div className="bg-background min-h-screen flex flex-col font-body">
       <header className="py-2 px-4 md:px-8 sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b-4 border-foreground">
-        <div className="container mx-auto grid grid-cols-[1fr_auto_1fr] items-center">
+        <div className="container mx-auto grid grid-cols-[auto_1fr_auto] items-center">
             <div className="flex justify-start">
                 <Link href="/" aria-label="Back to 8BitDex">
                     <Button variant="outline" size="xs" className="border-2 border-foreground">
                     <ArrowLeft />
-                    Back
+                    <span className="hidden sm:inline">Back</span>
                     </Button>
                 </Link>
             </div>

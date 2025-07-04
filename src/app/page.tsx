@@ -48,19 +48,19 @@ export default function Home() {
               8BitDex
             </h1>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Link href="/run" aria-label="Play Dex Arcade">
-              <Button variant="outline" size="icon" className="border-2 border-foreground">
+              <Button variant="outline" size="icon" className="border-2 border-foreground h-8 w-8 sm:h-10 sm:w-10">
                   <Gamepad2 className="h-4 w-4" />
               </Button>
             </Link>
             <Link href="/quiz" aria-label="Play Quiz-Dex">
-              <Button variant="outline" size="icon" className="border-2 border-foreground">
+              <Button variant="outline" size="icon" className="border-2 border-foreground h-8 w-8 sm:h-10 sm:w-10">
                   <BrainCircuit className="h-4 w-4" />
               </Button>
             </Link>
             <Link href="/snap" aria-label="Snap to Identify Pokémon">
-              <Button variant="outline" size="icon" className="border-2 border-foreground">
+              <Button variant="outline" size="icon" className="border-2 border-foreground h-8 w-8 sm:h-10 sm:w-10">
                   <Camera className="h-4 w-4" />
               </Button>
             </Link>
