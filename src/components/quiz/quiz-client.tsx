@@ -10,7 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { CheckCircle, XCircle, Trophy, Loader2, BrainCircuit, Swords, Shuffle, Image as ImageIcon } from 'lucide-react';
+import { CheckCircle, XCircle, Trophy, Loader2, BrainCircuit, Swords, Shuffle, Image as ImageIcon, Star, Shield, Gem } from 'lucide-react';
 
 // prettier-ignore
 const POKEMON_TYPES = [
@@ -19,7 +19,15 @@ const POKEMON_TYPES = [
   "dragon", "dark", "steel", "fairy"
 ];
 
+const GEN_LIMITS = {
+    easy: 251,   // Gen 1-2
+    medium: 493, // Gen 1-4
+    hard: 1025,  // All available
+};
+
 type QuizMode = 'identify-pokemon' | 'type-matchup' | 'mixed';
+type Difficulty = 'easy' | 'medium' | 'hard';
+type GameState = 'loading' | 'selecting-difficulty' | 'selecting-mode' | 'generating' | 'playing' | 'finished';
 
 type QuizQuestion = {
     type: 'identify-pokemon';
@@ -144,7 +152,8 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
     const [score, setScore] = useState(0);
     const [userAnswerId, setUserAnswerId] = useState<number | string | null>(null);
     const [showFeedback, setShowFeedback] = useState(false);
-    const [gameState, setGameState] = useState<'loading' | 'selecting' | 'generating' | 'playing' | 'finished'>('loading');
+    const [gameState, setGameState] = useState<GameState>('loading');
+    const [difficulty, setDifficulty] = useState<Difficulty>('easy');
     const [streak, setStreak] = useState(0);
     const [lastXpGain, setLastXpGain] = useState<number | null>(null);
     const [showLevelUp, setShowLevelUp] = useState(false);
@@ -197,6 +206,9 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
     const generateQuestions = useCallback(async (mode: QuizMode) => {
         setGameState('generating');
         
+        const limit = GEN_LIMITS[difficulty];
+        const availablePokemon = allPokemon.slice(0, limit);
+
         const questionPromises: Promise<QuizQuestion | null>[] = [];
         for (let i = 0; i < NUM_QUESTIONS; i++) {
             let questionType: 'identify-pokemon' | 'type-matchup';
@@ -214,8 +226,8 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
                     break;
             }
 
-            if (questionType === 'identify-pokemon' && allPokemon.length >= 4) {
-                 questionPromises.push(Promise.resolve(generateIdentifyPokemonQuestion(allPokemon)));
+            if (questionType === 'identify-pokemon' && availablePokemon.length >= 4) {
+                 questionPromises.push(Promise.resolve(generateIdentifyPokemonQuestion(availablePokemon)));
             } else {
                 questionPromises.push(generateTypeMatchupQuestion());
             }
@@ -231,13 +243,18 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
 
         setQuestions(newQuestions);
         setGameState('playing');
-    }, [allPokemon]);
+    }, [allPokemon, difficulty]);
     
     useEffect(() => {
         if (allPokemon.length > 0 && gameState === 'loading') {
-            setGameState('selecting');
+            setGameState('selecting-difficulty');
         }
     }, [allPokemon, gameState]);
+
+    const handleDifficultySelect = (selectedDifficulty: Difficulty) => {
+        setDifficulty(selectedDifficulty);
+        setGameState('selecting-mode');
+    };
 
     const handleModeSelect = (mode: QuizMode) => {
         generateQuestions(mode);
@@ -309,7 +326,7 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
         setQuestions([]);
         setStreak(0);
         setLastXpGain(null);
-        setGameState('selecting');
+        setGameState('selecting-difficulty');
     };
 
     if (gameState === 'loading') {
@@ -321,7 +338,40 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
         );
     }
 
-    if (gameState === 'selecting') {
+    if (gameState === 'selecting-difficulty') {
+        return (
+            <Card className="w-full max-w-2xl p-6 sm:p-8 text-center border-2 border-foreground bg-card">
+                <BrainCircuit className="w-16 h-16 mx-auto text-accent" />
+                <h2 className="text-2xl sm:text-3xl font-headline mt-4">Select Difficulty</h2>
+                <p className="text-muted-foreground mt-2 mb-8">Choose your challenge level to begin.</p>
+                <div className="grid grid-cols-1 gap-4">
+                    <Button onClick={() => handleDifficultySelect('easy')} size="lg" variant="outline" className="h-auto py-4 border-2 !border-foreground justify-start">
+                        <Star className="mr-4 h-8 w-8 text-green-500" />
+                        <div className="text-left">
+                            <p className="font-bold text-base">Easy</p>
+                            <p className="font-normal text-xs text-muted-foreground">Generations I & II</p>
+                        </div>
+                    </Button>
+                    <Button onClick={() => handleDifficultySelect('medium')} size="lg" variant="outline" className="h-auto py-4 border-2 !border-foreground justify-start">
+                        <Shield className="mr-4 h-8 w-8 text-yellow-500" />
+                        <div className="text-left">
+                            <p className="font-bold text-base">Medium</p>
+                            <p className="font-normal text-xs text-muted-foreground">Generations I - IV</p>
+                        </div>
+                    </Button>
+                    <Button onClick={() => handleDifficultySelect('hard')} size="lg" variant="outline" className="h-auto py-4 border-2 !border-foreground justify-start">
+                        <Gem className="mr-4 h-8 w-8 text-red-500" />
+                        <div className="text-left">
+                            <p className="font-bold text-base">Hard</p>
+                            <p className="font-normal text-xs text-muted-foreground">All Generations</p>
+                        </div>
+                    </Button>
+                </div>
+            </Card>
+        )
+    }
+
+    if (gameState === 'selecting-mode') {
         return (
             <>
                 <Card className="w-full max-w-2xl p-6 sm:p-8 text-center border-2 border-foreground bg-card">
@@ -499,3 +549,5 @@ export default function QuizClient({ allPokemon }: { allPokemon: PokemonListResu
         </div>
     );
 }
+
+    
