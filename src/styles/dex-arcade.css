@@ -1,0 +1,149 @@
+@keyframes lcd-scanline {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(100%); }
+}
+
+.pokegear-shell {
+  width: 100%;
+  max-width: 420px;
+  aspect-ratio: 9 / 16;
+  background: hsl(var(--primary));
+  border-radius: 2rem;
+  padding: 1.5rem;
+  box-shadow: 
+    inset 0 0 15px hsl(var(--primary) / 0.8),
+    0 8px 15px rgba(0,0,0,0.3),
+    0 0 0 4px hsl(var(--foreground));
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  border: 4px solid hsl(var(--foreground) / 0.5);
+}
+
+.pokegear-screen-bezel {
+  flex-grow: 1;
+  background: hsl(var(--foreground));
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: inset 0 4px 8px rgba(0,0,0,0.4);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.pokegear-screen {
+  width: 100%;
+  height: 100%;
+  background: #9bbc0f; /* Classic dot matrix green */
+  position: relative;
+  overflow: hidden;
+  image-rendering: pixelated;
+  border: 4px solid #306230;
+}
+
+.pokegear-screen canvas {
+  width: 100% !important;
+  height: 100% !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Screen overlay effects */
+.pokegear-screen::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: linear-gradient(rgba(0,0,0,0.15) 50%, transparent 50%);
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 2;
+}
+.pokegear-screen::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: radial-gradient(circle at center, rgba(255,255,255,0.2), rgba(0,0,0,0.3));
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.pokegear-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 0 1rem;
+}
+
+.pokegear-dpad {
+  width: 80px;
+  height: 80px;
+  background: hsl(var(--foreground));
+  border-radius: 50%;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+.pokegear-dpad::before,
+.pokegear-dpad::after {
+  content: '';
+  position: absolute;
+  background: hsl(var(--foreground));
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+}
+.pokegear-dpad::before { /* Vertical */
+  width: 30%;
+  height: 100%;
+  left: 35%;
+  top: 0;
+  border-radius: 8px;
+}
+.pokegear-dpad::after { /* Horizontal */
+  width: 100%;
+  height: 30%;
+  top: 35%;
+  left: 0;
+  border-radius: 8px;
+}
+
+.pokegear-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.pokegear-button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  font-family: var(--font-headline);
+  font-size: 1.25rem;
+  color: hsl(var(--primary));
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 0 hsl(var(--foreground) / 0.7);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.pokegear-button:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 hsl(var(--foreground) / 0.7);
+}
+
+.pokegear-button.a-button {
+  background: hsl(var(--accent));
+}
+
+.pokegear-button.b-button {
+  background: hsl(var(--accent-foreground));
+  color: white;
+}
